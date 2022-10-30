@@ -1,0 +1,17 @@
+.welcome {
+    width: 100vw;
+    height: 100vh;
+    background-color: rgb(29, 33, 35);
+    z-index: 4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.motion {
+    width: 100px;
+    height: 100px;
+    background-color: #ffffff;
+    position: fixed;
+    z-index: -1;
+}

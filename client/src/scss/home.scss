@@ -1,0 +1,322 @@
+.home {
+    background-color: rgba(29, 33, 35, 0);
+    width: 100vw;
+    height: 100vh;
+    overflow-x: hidden;
+    padding: 96px 59px 130px 96px;
+    color: #FFFFFF;
+}
+
+.home-section1 {
+    height: 60%;
+    // max-height: 373px;
+    width: 100%;
+    display: flex;
+}
+
+.rbHits {
+    background-color: #609EAF;
+    background-image: url(../images/Vector.png);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: right;
+    height: 100%;
+    width: 60%;
+    // max-width: 686px;
+    /* width: 686px; */
+    border-radius: 40px;
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+}
+
+.rbHits-info {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 38px 45px 38px;
+    z-index: 1;
+}
+
+.rbHits .curated {
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.rbHits .rbName {
+    font-weight: 700;
+    font-size: 35px;
+}
+
+.rbHits .rbDesc {
+    font-weight: 400;
+    font-size: 14px;
+    width: 280px;
+}
+
+.rbLikedSection {
+    display: flex;
+    align-items: center;
+}
+
+
+.rbLikedPics {
+    img {
+        margin-right: -12px;
+    }
+}
+
+.rbLikes {
+    font-weight: 400;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    width: 40%;
+    margin-left: 22px;
+
+    svg {
+        margin-right: 5px;
+    }
+
+}
+
+.rbHits-img {
+    max-width: 380px;
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.topCharts {
+    height: 100%;
+    width: 40%;
+    margin-left: 22px;
+
+    a {
+        font-weight: 400;
+        font-size: 17px;
+        color: #EFEEE0;
+        margin: 0px 0px 14px;
+        text-decoration: none;
+    }
+
+    img {
+        width: 63px;
+        height: 63px;
+        border-radius: 10px;
+        /* flex-grow: 1; */
+    }
+}
+
+.topCharts .topChart {
+    display: flex;
+    align-items: center;
+    padding: 0px 17px;
+    width: 100%;
+    height: 96px;
+    background: #1A1E1F;
+    border-radius: 20px;
+    margin-bottom: 12px;
+}
+
+
+.topChartInfo {
+    flex-grow: 2;
+    margin: 0px 14px;
+}
+
+.topChartName {
+    font-weight: 400;
+    font-size: 17px;
+    margin: 0;
+}
+
+.topChartOwn {
+    font-weight: 400;
+    font-size: 12px;
+    margin: 4px 0px 8px;
+    color: rgba(255, 255, 255, 0.5)
+}
+
+.topChartDur {
+    font-weight: 400;
+    font-size: 12px;
+    margin: 0;
+}
+
+.topChartLike {
+    margin-right: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 37px;
+    height: 37px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 50%;
+    background-color: rgba(29, 33, 35, 0);
+    cursor: pointer;
+
+    .songLiked {
+        path {
+            fill: #FACD66;
+        }
+    }
+}
+
+.latest {
+    display: flex;
+    flex-direction: column;
+    margin-top: 43px;
+
+    h2 {
+        font-weight: 700;
+        font-size: 24px;
+        color: #EFEEE0;
+    }
+}
+
+.topLatest {
+    display: flex;
+    overflow-x: auto;
+
+    &::-webkit-scrollbar {
+        height: 0px;
+    }
+}
+
+.newTrack {
+    margin-right: 30px;
+    width: 153px;
+    height: 193px;
+
+    img {
+        width: 153px;
+        height: 153px;
+        border-radius: 25px;
+    }
+}
+
+@media screen and (max-width: 576px) {
+
+    .home {
+        padding: 96px 23px 130px;
+    }
+
+    .home-section1 {
+        height: auto;
+        // max-height: 373px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .rbHits {
+        width: 100%;
+        height: 503px;
+        border-radius: 20px;
+        background-image: url(../images/Vector2.png);
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: right;
+        display: flex;
+        padding: 0;
+
+        .rbHits-img {
+            display: none;
+        }
+    }
+
+    .rbHits-info {
+        justify-content: flex-end;
+        position: relative;
+    }
+
+    .rbHits .curated {
+        position: absolute;
+        top: 32px;
+    }
+
+    .rbHits .rbDesc {
+        width: auto;
+    }
+
+    .rbLikedSection {
+        max-width: 267px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .rbLikedPics {
+        img {
+            margin-right: -15px;
+            width: 34px;
+            height: 34px;
+        }
+    }
+
+    .rbLikes {
+        font-size: 23px;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        width: auto;
+        // margin-left: 22px;
+
+        svg {
+            margin-left: 20px;
+            // transform: scale(1.8);
+            width: 22px;
+            height: 21px;
+        }
+
+    }
+
+    .topCharts {
+        margin: 50px 0px 0px;
+        width: 100%;
+        height: auto;
+
+        img {
+            width: 108px;
+            height: 99px;
+        }
+
+        .topchart-playlists {
+            display: flex;
+            width: 100%;
+            overflow-y: scroll;
+
+            &::-webkit-scrollbar {
+                height: 0px;
+            }
+        }
+
+        .topChart {
+            height: 233px;
+            min-width: 323px;
+            border-radius: 20px;
+            flex-direction: column;
+            align-items: flex-start;
+            position: relative;
+            margin-right: 17px;
+        }
+
+        .topChartInfo {
+            margin: 15px 0px 0px;
+
+            .topChartDur {
+                margin-top: 24px;
+            }
+        }
+
+        .topChartLike {
+            position: absolute;
+            top: 15px;
+            right: 14px;
+        }
+    }
+
+}

@@ -1,0 +1,13 @@
+.profile {
+    background-color: rgba(29, 33, 35, 0);
+    width: 100vw;
+    height: 100vh;
+    overflow-x: hidden;
+    padding: 96px 59px 130px 96px;
+}
+
+@media screen and (max-width:576px) {
+    .profile {
+        padding: 96px 23px 130px;
+    }
+}
