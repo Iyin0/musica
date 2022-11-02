@@ -4,13 +4,15 @@ import { playPlaylist, togglePlayback } from "./store/player";
 import './scss/playlist.scss';
 import convert from "./convert";
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import topCharts from "./topCharts";
+import playlist1 from "./playlist1";
 
 const HomePlaylist = () => {
 
     const playlist_info = useParams();
-    const allPlaylists = useSelector((state) => state.readPlaylist.playlists)
-    const playlist = allPlaylists.find(a => a.id === parseInt(playlist_info.playlist_id))
+    // const allPlaylists = useSelector((state) => state.readPlaylist.playlists)
+    const playlist = topCharts.find(a => a.id === parseInt(playlist_info.playlist_id))
     const [likedSong, setLikedSong] = useState([])
     const [duration, setDuration] = useState('')
     const dispatch = useDispatch();
@@ -56,7 +58,7 @@ const HomePlaylist = () => {
                         <div className="playlist_info">
                             <h1>{playlist.name}</h1>
                             <p>{playlist.description}</p>
-                            <p>{playlist.playlists.length} songs ~ {duration}</p>
+                            <p>{playlist1.length} songs ~ {duration}</p>
                             <div className="playlist_actions">
                                 <button onClick={() => { dispatch(playPlaylist(playlist.playlists)); dispatch(togglePlayback(true)) }}>
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -83,7 +85,7 @@ const HomePlaylist = () => {
                         </div>
                     </header>
                     <main className="playlist-songs">
-                        {playlist.playlists.map((song, index) => (
+                        {playlist1.map((song, index) => (
                             <div className="playlist-song" key={index}>
                                 <div className="playlist-song-avartar">
                                     <img src={song.image} alt="" />

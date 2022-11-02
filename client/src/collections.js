@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import PageTransition from './pageTransition';
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
-import { playPlaylist } from "./store/player";
+import { playPlaylist, togglePlayback } from "./store/player";
 import { updatePlaylist } from './store/playlists';
 import { Link } from 'react-router-dom';
 
@@ -186,7 +186,8 @@ const Collections = () => {
                                                 <p className="collection-artist">{song.artist}</p>
                                                 <button onClick={() => {
                                                     let empty = []
-                                                    dispatch(playPlaylist([...empty, song]))
+                                                    dispatch(playPlaylist([...empty, song]));
+                                                    dispatch(togglePlayback(true))
                                                 }}>
                                                     <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <path opacity="0.4" d="M40 20.0096C40 31.0275 31.0232 40 20 40C8.97683 40 0 31.0275 0 20.0096C0 8.9725 8.97683 0 20 0C31.0232 0 40 8.9725 40 20.0096Z" fill="#FACD66" />
