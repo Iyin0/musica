@@ -1,7 +1,7 @@
 import './scss/collections.scss';
 import { motion } from "framer-motion";
 import PageTransition from './pageTransition';
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 import { playPlaylist, togglePlayback } from "./store/player";
 import { updatePlaylist } from './store/playlists';
@@ -68,10 +68,9 @@ const Collections = () => {
                                     duration: audio_duration
                                 })
                                 setPlaylists(playlists.concat(newSongs))
-                                // console.log(newSongs)
                             },
                             onError: function (error) {
-                                // console.log(error);
+                                console.log(error);
 
                             }
                         })
@@ -152,10 +151,6 @@ const Collections = () => {
         }
 
     }
-
-    useEffect(() => {
-        console.log(allPlaylists)
-    }, [allPlaylists])
 
     return (
         <PageTransition>
