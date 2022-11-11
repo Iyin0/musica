@@ -9,20 +9,27 @@ const playlistSchema = new Schema({
     },
 
     description: {
-        type: String
-    },
-
-    user_id: {
-        type: String
+        type: String,
+        default: ''
     },
 
     image: {
-        type: String
+        type: Object,
+        default: ''
     },
 
     total_dur: {
         type: Number,
-    }
+    },
+
+    songs: {
+        type: [Object]
+    },
+
+    // user_id: {
+    //     type: String,
+    //     require: true
+    // }
 }, { timestamps: true })
 
 module.exports = mongoose.model('Playlist', playlistSchema)

@@ -30,7 +30,7 @@ const audioUploadMiddleware = multer({
     // limits: {
     //     fileSize: 1024 * 1024 * 10
     // }
-}).single('song')
+}).array('songs')
 
 const songUpload = util.promisify(audioUploadMiddleware)
 

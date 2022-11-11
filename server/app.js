@@ -6,6 +6,7 @@ require('dotenv').config();
 const bodyParser = require("body-parser");
 const accountRoutes = require("./router/accountRoutes")
 const playlistRoutes = require("./router/playlistRoutes")
+const Grid = require('gridfs-stream');
 
 
 const PORT = process.env.PORT || 3001;
@@ -27,8 +28,12 @@ app.use(
 app.use('/api/accounts', accountRoutes)
 app.use('/api/playlists', playlistRoutes)
 
+// initialize gfs
+let gfs;
+
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => {
+    .then((db) => {
+        gfs = Grid(db, mongoose.mongo)
         app.listen(PORT, () => {
             console.log(`Server live on ${PORT}`)
         });

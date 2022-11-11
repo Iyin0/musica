@@ -4,17 +4,27 @@ const { GridFsStorage } = require('multer-gridfs-storage');
 require('dotenv').config();
 
 
-const image = new GridFsStorage({
-    url: process.env.MONGO_URI,
-    options: { useNewUrlParser: true, useUnifiedTopology: true },
+// const image = new GridFsStorage({
+//     url: process.env.MONGO_URI,
+//     options: { useNewUrlParser: true, useUnifiedTopology: true },
 
-    file: (req, file) => {
-        return {
-            bucketName: process.env.IMG_BUCKET,
-            filename: `musica-${Date.now()}-${file.originalname}`
-        }
+//     file: (req, file) => {
+//         return {
+//             bucketName: process.env.IMG_BUCKET,
+//             filename: `musica-${Date.now()}-${file.originalname}`
+//         }
+//     }
+// })
+const image = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './images')
+    },
+    filename: function (req, file, cb) {
+        //   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, Date.now() + '-' + file.originalname)
     }
 })
+
 
 const imageUploadMiddleware = multer({
     storage: image,

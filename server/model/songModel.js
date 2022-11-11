@@ -10,32 +10,32 @@ const songSchema = new Schema({
         type: String
     },
 
+    artists: {
+        type: [String]
+    },
+
     album: {
         type: String
     },
 
-    genre: {
+    year: {
         type: String
+    },
+
+    genre: {
+        type: [String]
     },
 
     image: {
-        type: String
-    },
-
-    size: {
-        type: String
+        type: [Object]
     },
 
     duration: {
         type: Number
     },
 
-    src: {
+    song_id: {
         type: String
-    },
-
-    playlist_id: {
-        type: String,
     }
 }, { timestamps: true })
 
