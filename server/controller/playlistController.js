@@ -73,10 +73,10 @@ exports.deletePlaylist = async (req, res) => {
         return res.status(400).json({ error: "Playlist not found" })
     }
 
-    res.status(200).json(playlist)
+    res.status(200).json({ message: `${playlist.name} deleted successfully!!!` })
 }
 
-exports.updatePlaylist = async (req, res) => {
+exports.updatePlaylistInfo = async (req, res) => {
 
     const { id } = req.params
 
@@ -84,15 +84,93 @@ exports.updatePlaylist = async (req, res) => {
         return res.status(404).json({ error: "Playlist not found" })
     }
 
-    const playlist = await Playlist.findOneAndUpdate({ _id: id }, {
-        ...req.body
-    })
+    const playlist = await Playlist.findOneAndUpdate({ _id: id }, { name: req.body.name, description: req.body.description }, { new: true })
 
     if (!playlist) {
         return res.status(400).json({ error: "Playlist not found" })
     }
 
-    res.status(200).json(playlist)
+    res.status(200).json({ message: `${playlist.name} info updated successfully!!!`, playlist })
+}
+
+exports.updatePlaylistImage = async (req, res) => {
+
+    await playlistUpload(req, res)
+
+    const { id } = req.params
+
+    let img_id = ''
+
+    const { image } = req.files
+
+    if (image) {
+        img_info = await Promise.all(image.map(image => addImage(image)))
+        img_id = await getImageId(img_info)
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).json({ error: "Playlist not found" })
+    }
+
+    if (img_id) {
+        const playlist = await Playlist.findOneAndUpdate({ _id: id }, { image: img_id }, { new: true })
+
+        if (!playlist) {
+            return res.status(400).json({ error: "Playlist not found" })
+        }
+
+        res.status(200).json({ message: `${playlist.name} cover updated successfully!!!`, playlist })
+    }
+}
+
+exports.updatePlaylistSongs = async (req, res) => {
+
+    await playlistUpload(req, res)
+
+    const { id } = req.params
+
+    const { songs } = req.files
+
+    let songs_id = [];
+    let songs_info;
+    let total_dur;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).json({ error: "Playlist not found" })
+    }
+
+    if (!songs) {
+        res.status(400).json({ error: 'At least one song must be added to the playlist' })
+    }
+    else {
+        songs_info = await Promise.all(songs.map(song => addSongs(song)))
+    }
+
+    if (songs_info) {
+        songs_id = await getSongsId(songs_info)
+        total_dur = await getTotalDuration(songs_info)
+    }
+
+    const playlist = await Playlist.findById(id)
+
+    if (!playlist) {
+        return res.status(404).json({ error: "Playlist not found" })
+    }
+    else {
+
+        const newSongs = playlist.songs
+
+        songs_id.forEach((ids) => {
+            newSongs.push(ids)
+        })
+
+        const newDur = playlist.total_dur + total_dur
+
+        const updatedPlaylist = await Playlist.findOneAndUpdate({ _id: id }, { songs: newSongs, total_dur: newDur }, { new: true })
+
+        res.status(200).json({ message: `${playlist.name} info updated successfully!!!`, updatedPlaylist })
+
+    }
 }
 
 exports.getAllPlaylist = async (req, res) => {
@@ -106,19 +184,19 @@ exports.getAllPlaylist = async (req, res) => {
 }
 
 exports.getPlaylist = async (req, res) => {
-    // const { id } = req.params
+    const { id } = req.params
 
-    // if (!mongoose.Types.ObjectId.isValid(id)) {
-    //     return res.status(404).json({ error: "Playlist not found" })
-    // }
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: "Playlist not found" })
+    }
 
-    // const playlist = await Playlist.findById(id)
+    const playlist = await Playlist.findById(id)
 
-    // if (!playlist) {
-    //     return res.status(404).json({ error: "Playlist not found" })
-    // }
+    if (!playlist) {
+        return res.status(400).json({ error: "Playlist not found" })
+    }
 
-    // res.status(200).json(playlist)
+    res.status(200).json(playlist)
 }
 
 const addSongs = async (song) => {
