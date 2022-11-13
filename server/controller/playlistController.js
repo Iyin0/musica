@@ -7,6 +7,7 @@ const mongodb = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
 const { Readable } = require('stream');
 
+//  to add a new playlist
 exports.addNewPlaylist = async (req, res, next) => {
 
     await playlistUpload(req, res)
@@ -59,6 +60,7 @@ exports.addNewPlaylist = async (req, res, next) => {
 
 }
 
+//  to delete a playlist
 exports.deletePlaylist = async (req, res) => {
 
     const { id } = req.params
@@ -76,6 +78,7 @@ exports.deletePlaylist = async (req, res) => {
     res.status(200).json({ message: `${playlist.name} deleted successfully!!!` })
 }
 
+// to update a playlist name and description
 exports.updatePlaylistInfo = async (req, res) => {
 
     const { id } = req.params
@@ -93,6 +96,7 @@ exports.updatePlaylistInfo = async (req, res) => {
     res.status(200).json({ message: `${playlist.name} info updated successfully!!!`, playlist })
 }
 
+//  to update a playlist cover photo
 exports.updatePlaylistImage = async (req, res) => {
 
     await playlistUpload(req, res)
@@ -123,6 +127,7 @@ exports.updatePlaylistImage = async (req, res) => {
     }
 }
 
+//  to add songs to a playlist
 exports.updatePlaylistSongs = async (req, res) => {
 
     await playlistUpload(req, res)
@@ -173,6 +178,7 @@ exports.updatePlaylistSongs = async (req, res) => {
     }
 }
 
+//  to get all user playists
 exports.getAllPlaylist = async (req, res) => {
 
     try {
@@ -183,6 +189,7 @@ exports.getAllPlaylist = async (req, res) => {
     }
 }
 
+//  to get a single playlist
 exports.getPlaylist = async (req, res) => {
     const { id } = req.params
 
@@ -199,6 +206,7 @@ exports.getPlaylist = async (req, res) => {
     res.status(200).json(playlist)
 }
 
+// function to add songs to the database
 const addSongs = async (song) => {
 
     return new Promise((resolve, reject) => {
@@ -255,6 +263,7 @@ const addSongs = async (song) => {
     })
 }
 
+// function to add playlist cover to the database
 const addImage = async (image) => {
 
     return new Promise((resolve, reject) => {
@@ -297,6 +306,7 @@ const addImage = async (image) => {
     })
 }
 
+// function to return the duration of the playlist
 const getTotalDuration = async (songs) => {
 
     let total_duration = 0;
@@ -309,6 +319,7 @@ const getTotalDuration = async (songs) => {
 
 }
 
+// function to get the songs IDs
 const getSongsId = async (songs) => {
 
     let songs_id = []
@@ -321,6 +332,7 @@ const getSongsId = async (songs) => {
 
 }
 
+// function to get the image ID
 const getImageId = async (image) => {
 
     let img_id;
