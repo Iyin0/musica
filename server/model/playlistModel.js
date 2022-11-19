@@ -18,7 +18,7 @@ const playlistSchema = new Schema({
         default: ''
     },
 
-    total_dur: {
+    duration: {
         type: Number,
     },
 

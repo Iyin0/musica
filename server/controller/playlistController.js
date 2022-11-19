@@ -16,11 +16,12 @@ exports.addNewPlaylist = async (req, res, next) => {
 
     const { image, songs } = req.files
 
-    let songs_id = [];
-    let total_dur;
-    let img_id = ''
+    let uploadedSongs = [];
+    let duration;
+    let img;
     let img_info;
     let songs_info;
+
 
     if (!name) {
         res.status(400).json({ error: 'Your Playlist must have a name' })
@@ -36,20 +37,19 @@ exports.addNewPlaylist = async (req, res, next) => {
 
     if (image) {
         img_info = await Promise.all(image.map(image => addImage(image)))
-        img_id = await getImageId(img_info)
-
+        img = await getImageId(img_info)
     }
 
     if (songs_info) {
-        songs_id = await getSongsId(songs_info)
-        total_dur = await getTotalDuration(songs_info)
+        uploadedSongs = await getSongs(songs_info)
+        duration = await getTotalDuration(songs_info)
     }
 
 
-    if (songs_id && total_dur && img_id) {
+    if (uploadedSongs && duration) {
 
         try {
-            const playlist = await Playlist.create({ name, description, image: img_id, total_dur, songs: songs_id })
+            const playlist = await Playlist.create({ name, description, image: img, duration, songs: uploadedSongs })
             res.status(200).json(playlist)
         } catch (error) {
             res.status(400).json({ error: error.message })
@@ -136,9 +136,9 @@ exports.updatePlaylistSongs = async (req, res) => {
 
     const { songs } = req.files
 
-    let songs_id = [];
+    let uploadedSongs = [];
     let songs_info;
-    let total_dur;
+    let duration;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(404).json({ error: "Playlist not found" })
@@ -152,8 +152,8 @@ exports.updatePlaylistSongs = async (req, res) => {
     }
 
     if (songs_info) {
-        songs_id = await getSongsId(songs_info)
-        total_dur = await getTotalDuration(songs_info)
+        uploadedSongs = await getSongs(songs_info)
+        duration = await getTotalDuration(songs_info)
     }
 
     const playlist = await Playlist.findById(id)
@@ -165,13 +165,13 @@ exports.updatePlaylistSongs = async (req, res) => {
 
         const newSongs = playlist.songs
 
-        songs_id.forEach((ids) => {
-            newSongs.push(ids)
+        uploadedSongs.forEach((songs) => {
+            newSongs.push(songs)
         })
 
-        const newDur = playlist.total_dur + total_dur
+        const newDur = playlist.duration + duration
 
-        const updatedPlaylist = await Playlist.findOneAndUpdate({ _id: id }, { songs: newSongs, total_dur: newDur }, { new: true })
+        const updatedPlaylist = await Playlist.findOneAndUpdate({ _id: id }, { songs: newSongs, duration: newDur }, { new: true })
 
         res.status(200).json({ message: `${playlist.name} info updated successfully!!!`, updatedPlaylist })
 
@@ -185,7 +185,8 @@ exports.getAllPlaylist = async (req, res) => {
         const playlists = await Playlist.find({}).sort({ createdAt: -1 })
         res.status(200).json(playlists)
     } catch (error) {
-        res.status(400).json({ error: error.message })
+        if (res.status === 478) res.status(478).json({ error: 'Network Error' })
+        else res.status(400).json({ error: error.message })
     }
 }
 
@@ -203,7 +204,18 @@ exports.getPlaylist = async (req, res) => {
         return res.status(400).json({ error: "Playlist not found" })
     }
 
-    res.status(200).json(playlist)
+    else {
+        const image = await readImage(playlist.image.img_id, playlist.image.format)
+
+        res.status(200).json({
+            id: playlist._id,
+            name: playlist.name,
+            description: playlist.description,
+            image: image,
+            duration: playlist.duration,
+            songs: playlist.songs
+        })
+    }
 }
 
 // function to add songs to the database
@@ -243,11 +255,34 @@ const addSongs = async (song) => {
                         const { common, format } = await mm.parseBuffer(song.buffer, { mimetype: song.mimetype }, { duration: true })
                         const { title, artists, artist, album, year, genre, picture } = common
 
+                        let src;
+                        picture.forEach((item) => {
+                            src = `data:${item.format};base64,${item.data.toString('base64')}`;
+                        })
+
+                        const image = {
+                            src: src,
+                            format: picture.format,
+                            type: picture.type
+                        }
+
                         const { duration } = format
 
-                        const new_song = await Song.create({ title, artists, artist, album, year, genre, duration: Math.round(duration * 1000), image: picture, song_id: id })
+                        const new_song = await Song.create({ title, artists, artist, album, year, genre, duration: Math.round(duration * 1000), image: image, src: id })
                         song_id = id
-                        resolve({ song_id: song_id, message: "Song successfully added", song: new_song })
+                        resolve({
+                            song_id: song_id, message: "Song successfully added", song: {
+                                title: new_song.title,
+                                artists: new_song.artists,
+                                artist: new_song.artist,
+                                album: new_song.album,
+                                year: new_song.year,
+                                genre: new_song.genre,
+                                duration: new_song.duration,
+                                image: new_song.image,
+                                src: new_song.src,
+                            }
+                        })
 
                     } catch (error) {
                         console.error("Error is: " + error.message);
@@ -295,12 +330,48 @@ const addImage = async (image) => {
 
             uploadStream.on('finish', () => {
                 img_id = id
-                resolve({ img_id: img_id, message: `Image file successfully stored with id: ${id}` })
+                resolve({ img_id: img_id, mimetype: 'image/jpeg', message: `Image file successfully stored with id: ${id}` })
             });
 
         })
     }).then((result) => {
         return result
+    }).catch((error) => {
+        return error
+    })
+}
+
+// function to read playlist cover to the database
+const readImage = async (image_id, format) => {
+
+    return new Promise((resolve, reject) => {
+
+        MongoClient.connect(process.env.MONGO_URI, (err, client) => {
+            if (err) throw err
+            db = client.db(process.env.MONGODB_NAME);
+
+            let bucket = new mongodb.GridFSBucket(db, {
+                bucketName: process.env.IMG_BUCKET
+            });
+
+            let downloadStream = bucket.openDownloadStream(image_id);
+
+            downloadStream.on('data', (chunk) => {
+                resolve(chunk)
+            });
+
+            downloadStream.on('error', () => {
+                reject("Error reading image")
+            });
+
+            downloadStream.on('finish', () => {
+                console.log('finished streaming')
+            });
+
+        })
+
+    }).then((result) => {
+        return `data:${format};base64,${result.toString('base64')}`
     }).catch((error) => {
         return error
     })
@@ -320,15 +391,15 @@ const getTotalDuration = async (songs) => {
 }
 
 // function to get the songs IDs
-const getSongsId = async (songs) => {
+const getSongs = async (songs) => {
 
-    let songs_id = []
+    let allSong = []
 
     await songs.map((song) => {
-        songs_id.push(song.song_id)
+        allSong.push(song.song)
     })
 
-    return songs_id
+    return allSong
 
 }
 
@@ -336,11 +407,13 @@ const getSongsId = async (songs) => {
 const getImageId = async (image) => {
 
     let img_id;
+    let format;
 
     await image.map((image) => {
         img_id = image.img_id
+        format = image.mimetype
     })
 
-    return img_id
+    return { img_id, format }
 
 }

@@ -27,14 +27,14 @@ const songSchema = new Schema({
     },
 
     image: {
-        type: [Object]
+        type: Object
     },
 
     duration: {
         type: Number
     },
 
-    song_id: {
+    src: {
         type: String
     }
 }, { timestamps: true })

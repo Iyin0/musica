@@ -32,7 +32,7 @@ function App() {
           <Route path='/videos' element={<Videos />} />
           <Route path='/profile' element={<Profile />} />
           <Route path='/home/playlist/:playlist_id&:playlist_name' element={<HomePlaylist />} />
-          <Route path='/collections/playlist/:playlist_id&:playlist_name' element={<CollectionsPlaylist />} />
+          <Route path='/collections/playlist/:playlist_id' element={<CollectionsPlaylist />} />
         </Routes>
       </AnimatePresence>
     )

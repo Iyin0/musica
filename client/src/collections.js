@@ -1,96 +1,38 @@
 import './scss/collections.scss';
 import { motion } from "framer-motion";
 import PageTransition from './pageTransition';
-import { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
+import { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux';
 import { playPlaylist, togglePlayback } from "./store/player";
-import { updatePlaylist } from './store/playlists';
+// import { updatePlaylist } from './store/playlists';
 import { Link } from 'react-router-dom';
 
 
 const Collections = () => {
 
-    const jsmediatags = window.jsmediatags;
     const [likePage, setLikePage] = useState(false)
     const [playlistPageState, setPlaylistPageState] = useState(false)
-    const allPlaylists = useSelector((state) => state.readPlaylist.playlists)
     const dispatch = useDispatch();
     const [playlists, setPlaylists] = useState([])
     const [playlistName, setPlaylistName] = useState()
     const [playlistDesc, setPlaylistDesc] = useState()
-    const [playlistImage, setPlaylistImage] = useState(require('./images/defaultImg.png'))
+    const [playlistImage, setPlaylistImage] = useState()
+    const [playlistSongs, setPlaylistSongs] = useState([])
 
     const addSong = (e) => {
 
         e.preventDefault()
 
-        let newSongs = []
+        // let newSongs = []
 
         let input = document.createElement('input');
         input.type = 'file';
         input.multiple = true;
         input.onchange = () => {
             Array.from(input.files).forEach((song) => {
-                if (song.type.includes('audio')) {
-                    let audio = document.createElement('audio')
-
-                    audio.src = URL.createObjectURL(song)
-
-                    audio.onloadedmetadata = async () => {
-                        let audio_duration = audio.duration * 1000  // to milliseconds
-
-                        jsmediatags.read(song, {
-                            onSuccess: function async(tags) {
-                                let imgSrc = require('./images/defaultImg.png')
-                                let genreSrc = ''
-                                if (tags.tags.picture !== undefined) {
-                                    const data = tags.tags.picture.data
-                                    const format = tags.tags.picture.format
-                                    let base64String = ""
-
-                                    for (let i = 0; i < data.length; i++)
-                                        base64String += String.fromCharCode(data[i])
-                                    imgSrc = `data:${format};base64,${window.btoa(base64String)}`
-                                }
-
-                                if (tags.tags.genre !== undefined) {
-                                    genreSrc = tags.tags.genre
-                                }
-
-                                newSongs.push({
-                                    title: tags.tags.title,
-                                    artist: tags.tags.artist,
-                                    album: tags.tags.album,
-                                    genre: genreSrc,
-                                    image: imgSrc,
-                                    src: URL.createObjectURL(song),
-                                    size: song.size,
-                                    duration: audio_duration
-                                })
-                                setPlaylists(playlists.concat(newSongs))
-                            },
-                            onError: function (error) {
-                                console.log(error);
-
-                            }
-                        })
-                        // const tags = await id3.fromFile(song)
-                        //     newSongs.push({
-                        //         title: tags.title,
-                        //         artist: tags.artist,
-                        //         album: tags.album,
-                        //         genre: tags.genre,
-                        //         image: `data:${format};base64,${window.btoa(base64String)}`,
-                        //         // image: tags.images,
-                        //         // image: 'data:image/jpg;base64,' + btoa(arrayString),
-                        //         year: tags.year,
-                        //         src: URL.createObjectURL(song)
-                        //     })
-                        // setPlaylists(allPlaylists.concat(newSongs))
-                    }
-                }
-
+                if (song.type.includes('audio')) setPlaylistSongs(input.files)    // to only accept audio files
             })
+            // console.log(newSongs)
         };
         input.click();
     }
@@ -101,14 +43,18 @@ const Collections = () => {
         let input = document.createElement('input');
         input.type = 'file';
         input.onchange = _this => {
-            if (Array.from(input.files)[0].size > 10000000) {
-                alert("file too large")
+            if (input.files[0].type.includes('image')) {
+                if (Array.from(input.files)[0].size > 10000000) {
+                    alert("file too large")
+                }
+                else {
+                    // to get the file from local storage
+                    let file = Array.from(input.files)[0];
+                    setPlaylistImage(URL.createObjectURL(file))
+                }
             }
-            else {
-                // to get the file from local storage
-                let file = Array.from(input.files)[0];
-                setPlaylistImage(URL.createObjectURL(file))
-            }
+            else alert('Must only upload image files')
+
         };
         input.click();
     }
@@ -117,40 +63,79 @@ const Collections = () => {
         setPlaylistImage('')
         setPlaylistDesc('')
         setPlaylistName('')
-        setPlaylists([])
+        setPlaylistSongs([])
     }
 
-    const addPlaylist = (e) => {
+    const addPlaylist = async (e) => {
         e.preventDefault()
 
-        let totalDur = 0
-
-        playlists.forEach((duration) => {
-            totalDur = totalDur + duration.duration
-        })
-
-        if (playlistName === '') {
-            alert('Playlist name cannot be empty')
-        }
-        else if (playlists.length < 1) {
-            alert('No Song Added')
-        }
-        else {
-            const playlist = {
-                id: allPlaylists.length + 1,
+        await fetch('http://localhost:5000/api/playlists', {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            body: {
                 name: playlistName,
                 description: playlistDesc,
                 image: playlistImage,
-                playlists: playlists,
-                duration: totalDur
+                songs: playlistSongs
             }
+        })
+            .then(async res => {
+                if (!res.ok) throw Error('Unable to upload playlist')
+                return await res.json()
+            })
+            .then((data) => {
+                console.log('Playlist Uploaded')
+            })
+            .catch(err => {
+                throw Error(err)
+            })
 
-            dispatch(updatePlaylist([...allPlaylists, playlist]))
-            clearField()
-            setPlaylistPageState(false)
-        }
+        // let totalDur = 0
+
+        // playlists.forEach((duration) => {
+        //     totalDur = totalDur + duration.duration
+        // })
+
+        // if (playlistName === '') {
+        //     alert('Playlist name cannot be empty')
+        // }
+        // else if (playlists.length < 1) {
+        //     alert('No Song Added')
+        // }
+        // else {
+        //     const playlist = {
+        //         id: allPlaylists.length + 1,
+        //         name: playlistName,
+        //         description: playlistDesc,
+        //         image: playlistImage,
+        //         playlists: playlists,
+        //         duration: totalDur
+        //     }
+
+        //     dispatch(updatePlaylist([...allPlaylists, playlist]))
+        //     clearField()
+        //     setPlaylistPageState(false)
+        // }
 
     }
+
+    useEffect(() => {
+        fetch('http://localhost:5000/api/playlists', {
+            method: "GET",
+        })
+            .then(async res => {
+                return await res.json()
+            })
+            .then(data => {
+                setPlaylists(data)
+            })
+            .catch(err => {
+                console.log(err)
+            })
+    }, [])
 
     return (
         <PageTransition>
@@ -167,16 +152,16 @@ const Collections = () => {
                 ) : (
                     <main className='collection-page'>
                         <div className="user-collections">
-                            {allPlaylists.map((playlist, index) => (
+                            {playlists.map((playlist, index) => (
                                 <div className="playlists" key={index}>
                                     <div className='playlist-header'>
                                         <h2>{playlist.name}</h2>
-                                        <Link to={`/collections/playlist/${playlist.id}&${playlist.name}`} className="topChartName">See more</Link>
+                                        <Link to={`/collections/playlist/${playlist._id}`} className="topChartName">See more</Link>
                                     </div>
                                     <div className='playlist-container'>
-                                        {playlist.playlists.slice(0, 10).map((song, index) => (
+                                        {playlist.songs.slice(0, 10).map((song, index) => (
                                             <div className='playlist-items' key={index} >
-                                                <img src={song.image} alt="" />
+                                                <img src={song.image.src} alt="" />
                                                 <p className="collection-name">{song.title}</p>
                                                 <p className="collection-artist">{song.artist}</p>
                                                 <button onClick={() => {
