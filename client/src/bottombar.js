@@ -43,13 +43,6 @@ const BottomBar = () => {
         }
     }
 
-    // const thumbVal = (e) => {
-
-    //     audioEl.current.currentTime = e.target.value
-
-    // }
-
-
     useEffect(() => {
         if (isPlaying) {
             audioEl.current.play()
@@ -62,6 +55,7 @@ const BottomBar = () => {
     useEffect(() => {
         setIsPlaying(playbackState)
     }, [playbackState])
+
 
     const onplaying = () => {
 
@@ -92,11 +86,11 @@ const BottomBar = () => {
     return (
         <div className="bottombar">
             <div className="bottom-left">
-                <img src={playables.length > 0 ? playables[currentSongIndex].image : ''} alt="" />
+                <img src={playables.length > 0 ? playables[currentSongIndex].image.src : ''} alt="" />
                 <div className="current-playing">
                     <p className="current-song">{playables.length > 0 ? playables[currentSongIndex].title : '-'}</p>
                     <p className="current-artist">{playables.length > 0 ? playables[currentSongIndex].artist : '-'}</p>
-                    <audio ref={audioEl} src={playables.length > 0 ? playables[currentSongIndex].src : ''} onTimeUpdate={() => onplaying()}></audio>
+                    <audio ref={audioEl} src={playables.length > 0 ? `http://localhost:5000/api/song/${playables[currentSongIndex].src}` : ''} onTimeUpdate={() => onplaying()}></audio>
                 </div>
             </div>
             <div className="bottom-middle">

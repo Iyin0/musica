@@ -122,7 +122,8 @@ const Collections = () => {
 
     }
 
-    useEffect(() => {
+    const getAllPlaylist = () => {
+
         fetch('http://localhost:5000/api/playlists', {
             method: "GET",
         })
@@ -135,6 +136,10 @@ const Collections = () => {
             .catch(err => {
                 console.log(err)
             })
+    }
+
+    useEffect(() => {
+        getAllPlaylist()
     }, [])
 
     return (

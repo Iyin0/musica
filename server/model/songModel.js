@@ -34,7 +34,7 @@ const songSchema = new Schema({
         type: Number
     },
 
-    src: {
+    song_id: {
         type: String
     }
 }, { timestamps: true })

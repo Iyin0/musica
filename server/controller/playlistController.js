@@ -7,6 +7,12 @@ const mongodb = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
 const { Readable } = require('stream');
 
+let db;
+MongoClient.connect(process.env.MONGO_URI, (err, client) => {
+    if (err) throw err
+    db = client.db(process.env.MONGODB_NAME);
+})
+
 //  to add a new playlist
 exports.addNewPlaylist = async (req, res, next) => {
 
@@ -231,66 +237,60 @@ const addSongs = async (song) => {
         songStream.push(song.buffer);
         songStream.push(null);
 
-        MongoClient.connect(process.env.MONGO_URI, (err, client) => {
-            if (err) throw err
-            db = client.db(process.env.MONGODB_NAME);
+        let bucket = new mongodb.GridFSBucket(db, {
+            bucketName: process.env.AUDIO_BUCKET
+        });
 
-            let bucket = new mongodb.GridFSBucket(db, {
-                bucketName: process.env.AUDIO_BUCKET
-            });
+        let uploadStream = bucket.openUploadStream(song.originalname);
+        let id = uploadStream.id;
+        songStream.pipe(uploadStream);
 
-            let uploadStream = bucket.openUploadStream(song.originalname);
-            let id = uploadStream.id;
-            songStream.pipe(uploadStream);
+        uploadStream.on('error', () => {
+            // bucket.delete(id);
+            songErr_id = id
+            reject({ error: `Error uploading audio file with id: ${id}`, id: songErr_id })
+        });
 
-            uploadStream.on('error', () => {
-                // bucket.delete(id);
-                songErr_id = id
-                reject({ error: `Error uploading audio file with id: ${id}`, id: songErr_id })
-            });
+        uploadStream.on('finish', () => {
+            (async () => {
+                try {
+                    const { common, format } = await mm.parseBuffer(song.buffer, { mimetype: song.mimetype }, { duration: true })
+                    const { title, artists, artist, album, year, genre, picture } = common
 
-            uploadStream.on('finish', () => {
-                (async () => {
-                    try {
-                        const { common, format } = await mm.parseBuffer(song.buffer, { mimetype: song.mimetype }, { duration: true })
-                        const { title, artists, artist, album, year, genre, picture } = common
+                    let src;
+                    picture.forEach((item) => {
+                        src = `data:${item.format};base64,${item.data.toString('base64')}`;
+                    })
 
-                        let src;
-                        picture.forEach((item) => {
-                            src = `data:${item.format};base64,${item.data.toString('base64')}`;
-                        })
-
-                        const image = {
-                            src: src,
-                            format: picture.format,
-                            type: picture.type
-                        }
-
-                        const { duration } = format
-
-                        const new_song = await Song.create({ title, artists, artist, album, year, genre, duration: Math.round(duration * 1000), image: image, src: id })
-                        song_id = id
-                        resolve({
-                            song_id: song_id, message: "Song successfully added", song: {
-                                title: new_song.title,
-                                artists: new_song.artists,
-                                artist: new_song.artist,
-                                album: new_song.album,
-                                year: new_song.year,
-                                genre: new_song.genre,
-                                duration: new_song.duration,
-                                image: new_song.image,
-                                src: new_song.src,
-                            }
-                        })
-
-                    } catch (error) {
-                        console.error("Error is: " + error.message);
+                    const image = {
+                        src: src,
+                        format: picture.format,
+                        type: picture.type
                     }
-                })();
-            });
 
-        })
+                    const { duration } = format
+
+                    const new_song = await Song.create({ title, artists, artist, album, year, genre, duration: Math.round(duration * 1000), image: image, song_id: id })
+                    song_id = id
+                    resolve({
+                        song_id: song_id, message: "Song successfully added", song: {
+                            title: new_song.title,
+                            artists: new_song.artists,
+                            artist: new_song.artist,
+                            album: new_song.album,
+                            year: new_song.year,
+                            genre: new_song.genre,
+                            duration: new_song.duration,
+                            image: new_song.image,
+                            src: new_song.src,
+                        }
+                    })
+
+                } catch (error) {
+                    console.error("Error is: " + error.message);
+                }
+            })();
+        });
     }).then((result) => {
         return result
     }).catch((error) => {
@@ -311,29 +311,23 @@ const addImage = async (image) => {
         imageStream.push(image.buffer);
         imageStream.push(null);
 
-        MongoClient.connect(process.env.MONGO_URI, (err, client) => {
-            if (err) throw err
-            db = client.db(process.env.MONGODB_NAME);
+        let bucket = new mongodb.GridFSBucket(db, {
+            bucketName: process.env.IMG_BUCKET
+        });
 
-            let bucket = new mongodb.GridFSBucket(db, {
-                bucketName: process.env.IMG_BUCKET
-            });
+        let uploadStream = bucket.openUploadStream(image.originalname);
+        let id = uploadStream.id;
+        imageStream.pipe(uploadStream);
 
-            let uploadStream = bucket.openUploadStream(image.originalname);
-            let id = uploadStream.id;
-            imageStream.pipe(uploadStream);
+        uploadStream.on('error', () => {
+            imgErr_id = id
+            reject({ error: `Error uploading image file with id: ${id}`, id: imgErr_id })
+        });
 
-            uploadStream.on('error', () => {
-                imgErr_id = id
-                reject({ error: `Error uploading image file with id: ${id}`, id: imgErr_id })
-            });
-
-            uploadStream.on('finish', () => {
-                img_id = id
-                resolve({ img_id: img_id, mimetype: 'image/jpeg', message: `Image file successfully stored with id: ${id}` })
-            });
-
-        })
+        uploadStream.on('finish', () => {
+            img_id = id
+            resolve({ img_id: img_id, mimetype: 'image/jpeg', message: `Image file successfully stored with id: ${id}` })
+        });
     }).then((result) => {
         return result
     }).catch((error) => {
@@ -346,30 +340,23 @@ const readImage = async (image_id, format) => {
 
     return new Promise((resolve, reject) => {
 
-        MongoClient.connect(process.env.MONGO_URI, (err, client) => {
-            if (err) throw err
-            db = client.db(process.env.MONGODB_NAME);
+        let bucket = new mongodb.GridFSBucket(db, {
+            bucketName: process.env.IMG_BUCKET
+        });
 
-            let bucket = new mongodb.GridFSBucket(db, {
-                bucketName: process.env.IMG_BUCKET
-            });
+        let downloadStream = bucket.openDownloadStream(image_id);
 
-            let downloadStream = bucket.openDownloadStream(image_id);
+        downloadStream.on('data', (chunk) => {
+            resolve(chunk)
+        });
 
-            downloadStream.on('data', (chunk) => {
-                resolve(chunk)
-            });
+        downloadStream.on('error', () => {
+            reject("Error reading image")
+        });
 
-            downloadStream.on('error', () => {
-                reject("Error reading image")
-            });
-
-            downloadStream.on('finish', () => {
-                console.log('finished streaming')
-            });
-
-        })
-
+        downloadStream.on('finish', () => {
+            console.log('finished streaming')
+        });
     }).then((result) => {
         return `data:${format};base64,${result.toString('base64')}`
     }).catch((error) => {

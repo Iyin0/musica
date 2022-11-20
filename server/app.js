@@ -6,6 +6,7 @@ require('dotenv').config();
 const bodyParser = require("body-parser");
 const accountRoutes = require("./router/accountRoutes")
 const playlistRoutes = require("./router/playlistRoutes")
+const songRoutes = require("./router/songRoutes")
 const Grid = require('gridfs-stream');
 
 
@@ -27,6 +28,7 @@ app.use(
 
 app.use('/api/accounts', accountRoutes)
 app.use('/api/playlists', playlistRoutes)
+app.use('/api/song', songRoutes)
 
 // initialize gfs
 let gfs;
