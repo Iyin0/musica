@@ -15,6 +15,7 @@ const BottomBar = () => {
     const [currentTime, setCurrentTime] = useState(0)
     const [duration, setDuration] = useState(0)
     const [progressBar, setProgressBar] = useState()
+    // const [playing, setPlaying] = useState(null)
 
 
     const skipSong = (forward = true) => {
@@ -56,6 +57,12 @@ const BottomBar = () => {
         setIsPlaying(playbackState)
     }, [playbackState])
 
+    // useEffect(async () => {
+    //     const response = await fetch(`http://localhost:5000/api/song/${playables[currentSongIndex].song_id}`)
+
+    //     if (response.okay) setPlaying(response)
+    // }, [currentSongIndex])
+
 
     const onplaying = () => {
 
@@ -90,7 +97,7 @@ const BottomBar = () => {
                 <div className="current-playing">
                     <p className="current-song">{playables.length > 0 ? playables[currentSongIndex].title : '-'}</p>
                     <p className="current-artist">{playables.length > 0 ? playables[currentSongIndex].artist : '-'}</p>
-                    <audio ref={audioEl} src={playables.length > 0 ? `http://localhost:5000/api/song/${playables[currentSongIndex].src}` : ''} onTimeUpdate={() => onplaying()}></audio>
+                    <audio ref={audioEl} src={playables.length > 0 ? `http://localhost:5000/api/song/${playables[currentSongIndex].song_id}` : ''} onTimeUpdate={() => onplaying()}></audio>
                 </div>
             </div>
             <div className="bottom-middle">

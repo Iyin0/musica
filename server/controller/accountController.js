@@ -6,10 +6,10 @@ const createToken = (_id) => {
 }
 
 exports.signupUser = async (req, res) => {
-    const { first_name, last_name, username, email, password } = req.body
+    const { username, email, password } = req.body
 
     try {
-        const user = await Account.signup(first_name, last_name, username, email, password)
+        const user = await Account.signup(username, email, password)
         const token = createToken(user._id)
 
         res.status(200).json({ email, token })

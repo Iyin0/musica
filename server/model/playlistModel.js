@@ -26,10 +26,15 @@ const playlistSchema = new Schema({
         type: [Object]
     },
 
-    // user_id: {
-    //     type: String,
-    //     require: true
-    // }
+    likes: {
+        type: Number,
+        default: 0
+    },
+
+    user_id: {
+        type: String,
+        require: true
+    }
 }, { timestamps: true })
 
 module.exports = mongoose.model('Playlist', playlistSchema)

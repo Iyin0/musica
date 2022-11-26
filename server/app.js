@@ -19,13 +19,13 @@ app.use(morgan('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-app.use(
-    cors({
-        origin: "*",
-        credentials: true
-    })
-)
-
+// app.use(
+//     cors({
+//         origin: "*",
+//         credentials: true
+//     })
+// )
+app.use('/public', express.static('public'))
 app.use('/api/accounts', accountRoutes)
 app.use('/api/playlists', playlistRoutes)
 app.use('/api/song', songRoutes)

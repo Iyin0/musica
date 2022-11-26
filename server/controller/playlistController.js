@@ -6,6 +6,7 @@ const mm = require('music-metadata');
 const mongodb = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
 const { Readable } = require('stream');
+const fs = require('fs');
 
 let db;
 MongoClient.connect(process.env.MONGO_URI, (err, client) => {
@@ -24,10 +25,9 @@ exports.addNewPlaylist = async (req, res, next) => {
 
     let uploadedSongs = [];
     let duration;
-    let img;
+    let img = '';
     let img_info;
     let songs_info;
-
 
     if (!name) {
         res.status(400).json({ error: 'Your Playlist must have a name' })
@@ -40,23 +40,32 @@ exports.addNewPlaylist = async (req, res, next) => {
         songs_info = await Promise.all(songs.map(song => addSongs(song)))
     }
 
+    if (songs_info) {
+        uploadedSongs = await getSongs(songs_info)
+        duration = await getTotalDuration(songs_info)
+    }
+    else {
+        res.status(400).json({ error: 'Unable to Create Playlist' })
+    }
 
     if (image) {
         img_info = await Promise.all(image.map(image => addImage(image)))
         img = await getImageId(img_info)
     }
 
-    if (songs_info) {
-        uploadedSongs = await getSongs(songs_info)
-        duration = await getTotalDuration(songs_info)
-    }
-
-
     if (uploadedSongs && duration) {
 
         try {
-            const playlist = await Playlist.create({ name, description, image: img, duration, songs: uploadedSongs })
-            res.status(200).json(playlist)
+            const user_id = req.user._id
+            const playlist = await Playlist.create({ name, description, image: img, duration, songs: uploadedSongs, user_id })
+            res.status(200).json({
+                name: playlist.name,
+                description: playlist.description,
+                image: playlist.image,
+                duration: playlist.duration,
+                songs: playlist.songs,
+                user_id: playlist.user_id
+            })
         } catch (error) {
             res.status(400).json({ error: error.message })
         }
@@ -188,17 +197,18 @@ exports.updatePlaylistSongs = async (req, res) => {
 exports.getAllPlaylist = async (req, res) => {
 
     try {
-        const playlists = await Playlist.find({}).sort({ createdAt: -1 })
-        res.status(200).json(playlists)
+        const playlists = await Playlist.find({ user_id: req.user._id }).sort({ createdAt: -1 })
+        const allPlaylists = await getAllPlaylists(playlists)
+        res.status(200).json(allPlaylists)
     } catch (error) {
-        if (res.status === 478) res.status(478).json({ error: 'Network Error' })
-        else res.status(400).json({ error: error.message })
+        res.status(400).json({ error: "Unable to Fetch Playlist" })
     }
 }
 
 //  to get a single playlist
 exports.getPlaylist = async (req, res) => {
     const { id } = req.params
+    let image;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ error: "Playlist not found" })
@@ -211,7 +221,13 @@ exports.getPlaylist = async (req, res) => {
     }
 
     else {
-        const image = await readImage(playlist.image.img_id, playlist.image.format)
+        if (playlist.image === '') {
+            image = 'http://localhost:5000/public/defaultImg.png'
+            // image = fs.writeFileSync(__dirname + '../public/defaultImg.png', buffer)
+        }
+        else {
+            image = await readImage(playlist.image.img_id, playlist.image.format)
+        }
 
         res.status(200).json({
             id: playlist._id,
@@ -248,24 +264,28 @@ const addSongs = async (song) => {
         uploadStream.on('error', () => {
             // bucket.delete(id);
             songErr_id = id
-            reject({ error: `Error uploading audio file with id: ${id}`, id: songErr_id })
+            // reject()
         });
 
         uploadStream.on('finish', () => {
             (async () => {
                 try {
+                    let image = '';
                     const { common, format } = await mm.parseBuffer(song.buffer, { mimetype: song.mimetype }, { duration: true })
                     const { title, artists, artist, album, year, genre, picture } = common
 
                     let src;
-                    picture.forEach((item) => {
-                        src = `data:${item.format};base64,${item.data.toString('base64')}`;
-                    })
+                    if (picture) {
+                        picture.forEach((item) => {
+                            src = `data:${item.format};base64,${item.data.toString('base64')}`;
+                        })
 
-                    const image = {
-                        src: src,
-                        format: picture.format,
-                        type: picture.type
+
+                        image = {
+                            src: src,
+                            format: picture.format,
+                            type: picture.type
+                        }
                     }
 
                     const { duration } = format
@@ -273,7 +293,8 @@ const addSongs = async (song) => {
                     const new_song = await Song.create({ title, artists, artist, album, year, genre, duration: Math.round(duration * 1000), image: image, song_id: id })
                     song_id = id
                     resolve({
-                        song_id: song_id, message: "Song successfully added", song: {
+                        song_id: song_id, message: "Song successfully added",
+                        song: {
                             title: new_song.title,
                             artists: new_song.artists,
                             artist: new_song.artist,
@@ -282,7 +303,7 @@ const addSongs = async (song) => {
                             genre: new_song.genre,
                             duration: new_song.duration,
                             image: new_song.image,
-                            src: new_song.src,
+                            song_id: new_song.song_id,
                         }
                     })
 
@@ -321,7 +342,7 @@ const addImage = async (image) => {
 
         uploadStream.on('error', () => {
             imgErr_id = id
-            reject({ error: `Error uploading image file with id: ${id}`, id: imgErr_id })
+            // reject()
         });
 
         uploadStream.on('finish', () => {
@@ -369,9 +390,11 @@ const getTotalDuration = async (songs) => {
 
     let total_duration = 0;
 
-    await songs.map((song) => {
-        total_duration += song.song.duration
-    })
+    if (songs) {
+        await songs.map((song) => {
+            total_duration += song.song.duration
+        })
+    }
 
     return total_duration
 
@@ -382,9 +405,11 @@ const getSongs = async (songs) => {
 
     let allSong = []
 
-    await songs.map((song) => {
-        allSong.push(song.song)
-    })
+    if (songs) {
+        await songs.map((song) => {
+            allSong.push(song.song)
+        })
+    }
 
     return allSong
 
@@ -402,5 +427,32 @@ const getImageId = async (image) => {
     })
 
     return { img_id, format }
+
+}
+
+const getAllPlaylists = (playlists) => {
+
+    let allPlaylists = []
+    let image;
+
+    playlists.map((playlist) => {
+
+        if (playlist.image === '') {
+            image = 'http://localhost:5000/public/defaultImg.png'
+            // image = fs.writeFile(__dirname + '../public/defaultImg.png', buffer)
+        }
+
+        allPlaylists.push({
+            _id: playlist._id,
+            name: playlist.name,
+            description: playlist.description,
+            image: image,
+            duration: playlist.duration,
+            songs: playlist.songs,
+            likes: playlist.likes,
+        })
+    })
+
+    return allPlaylists
 
 }

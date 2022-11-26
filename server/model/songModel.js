@@ -34,6 +34,11 @@ const songSchema = new Schema({
         type: Number
     },
 
+    likes: {
+        type: Number,
+        default: 0
+    },
+
     song_id: {
         type: String
     }

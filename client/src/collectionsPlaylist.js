@@ -5,14 +5,18 @@ import './scss/playlist.scss';
 import convert from "./convert";
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux';
+import { useAuthContext } from './hooks/useAuthContext';
 
 const CollectionsPlaylist = () => {
 
     const playlistID = useParams();
     const [playlist, setPlaylist] = useState(null)
+    const [errorPlaylist, setErrorPlaylist] = useState(null)
+    const [fetchingPlaylist, setFetchingPlaylist] = useState(null)
     const [likedSong, setLikedSong] = useState([])
     const [duration, setDuration] = useState('')
     const dispatch = useDispatch();
+    const { user } = useAuthContext()
 
     const addSong = (index) => {
 
@@ -29,28 +33,45 @@ const CollectionsPlaylist = () => {
         }
     }
 
-    const getPlaylist = () => {
+    const getPlaylist = async () => {
 
-        fetch(`http://localhost:5000/api/playlists/${playlistID.playlist_id}`, {
-            method: "GET",
+        if (!user) {
+            setFetchingPlaylist(false)
+            setErrorPlaylist('You must be logged in')
+            return
+        }
+
+        setErrorPlaylist(false)
+        setFetchingPlaylist(true)
+
+        const response = await fetch(`/api/playlists/${playlistID.playlist_id}`, {
+            headers: {
+                'Authorization': `Bearer ${user.token}`
+            }
         })
-            .then(async res => {
-                return await res.json()
-            })
-            .then(data => {
-                setPlaylist(data)
 
-                const duration = convert(data.duration / 1000)
+        const json = await response.json()
 
-                const approx_dur = duration.split(':')
+        if (!response.ok) {
+            setErrorPlaylist(json)
+            setFetchingPlaylist(false)
+            console.log(json)
+        }
 
-                if (approx_dur.length === 1) setDuration(`${approx_dur[0]} sec`)
-                else if (approx_dur.length === 2) setDuration(`${approx_dur[0]} mins`)
-                else if (approx_dur.length === 3) setDuration(`${approx_dur[0]} hrs`)
-            })
-            .catch(err => {
-                console.log(err)
-            })
+        if (response.ok) {
+            setPlaylist(json)
+            console.log(json)
+
+            const duration = convert(json.duration / 1000)
+
+            const approx_dur = duration.split(':')
+
+            if (approx_dur.length === 1) setDuration(`${approx_dur[0]} sec`)
+            else if (approx_dur.length === 2) setDuration(`${approx_dur[0]} mins`)
+            else if (approx_dur.length === 3) setDuration(`${approx_dur[0]} hrs`)
+
+            setFetchingPlaylist(false)
+        }
     }
 
     useEffect(() => {
@@ -60,6 +81,17 @@ const CollectionsPlaylist = () => {
 
     return (
         <PageTransition>
+            {fetchingPlaylist &&
+                <div className="fetching-playlist playlist">
+                    <p>Fetching Playlist</p>
+                </div>
+            }
+            {errorPlaylist &&
+                <div className="error-playlist playlist">
+                    <p>{errorPlaylist}</p>
+                    <button onClick={() => getPlaylist()}>Try again</button>
+                </div>
+            }
             {playlist &&
                 <div
                     className="playlistback"
@@ -119,7 +151,8 @@ const CollectionsPlaylist = () => {
                             ))}
                         </main>
                     </div>
-                </div>}
+                </div>
+            }
         </PageTransition>
     );
 }

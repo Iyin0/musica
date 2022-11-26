@@ -1,4 +1,4 @@
-nav {
+.topbar {
     height: 73px;
     width: 100vw;
     display: flex;
@@ -86,7 +86,7 @@ nav {
 
 @media screen and (max-width:576px) {
 
-    nav {
+    .topbar {
         left: 0;
         right: 0;
         padding: 0px 23px;

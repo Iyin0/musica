@@ -5,18 +5,11 @@ const validator = require("validator")
 const Schema = mongoose.Schema
 
 const accountSchema = new Schema({
-    first_name: {
-        type: String,
-        required: true
-    },
-
-    last_name: {
-        type: String,
-        required: true
-    },
 
     username: {
-        type: String
+        type: String,
+        required: true,
+        unique: true
     },
 
     email: {
@@ -31,18 +24,19 @@ const accountSchema = new Schema({
     },
 
     avatar: {
-        type: Buffer,
+        type: Object,
+        default: ''
     },
 
 }, { timestamps: true })
 
 
 // static signup method
-accountSchema.statics.signup = async function (first_name, last_name, username, email, password) {
+accountSchema.statics.signup = async function (username, email, password) {
 
     // validation
 
-    if (!first_name || !last_name || !email || !password) throw Error("All fields must be filled")
+    if (!username || !email || !password) throw Error("All fields must be filled")
 
     if (!validator.isEmail(email)) throw Error("Email not valid")
 
@@ -57,7 +51,7 @@ accountSchema.statics.signup = async function (first_name, last_name, username, 
 
     if (!username) username = first_name
 
-    const user = await this.create({ first_name, last_name, username, email, password: hash })
+    const user = await this.create({ username, email, password: hash })
 
     return user
 
