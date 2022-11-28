@@ -15,7 +15,7 @@ import Signup from './signup';
 import Login from './login';
 import { useAuthContext } from './hooks/useAuthContext';
 import LandingPage from './landingPage';
-// import { ChakraProvider } from '@chakra-ui/react'
+import Navbar from './navbar';
 
 
 function App() {
@@ -24,17 +24,28 @@ function App() {
 
   // For smooth transitioning between the pages
 
-  const PageTransition = () => {
-
+  const UnauthPageTransition = () => {
     const location = useLocation();
 
     return (
 
       <AnimatePresence mode='wait' >
-        <SideBar />
-        <TopBar />
         <Routes key={location.pathname} location={location}>
-          <Route path='/' element={<Welcome />} />
+          <Route path='/' element={!user ? <LandingPage /> : <Navigate to="/home" />} />
+          <Route path='/signup' element={!user ? <Signup /> : <Navigate to="/home" />} />
+          <Route path='/login' element={!user ? <Login /> : <Navigate to="/home" />} />
+        </Routes>
+      </AnimatePresence>
+    )
+  }
+
+  const AuthPageTransition = () => {
+    const location = useLocation();
+
+    return (
+      <AnimatePresence mode='wait' >
+        <Routes key={location.pathname} location={location}>
+          <Route path='/welcome' element={user ? <Welcome /> : <Navigate to="/login" />} />
           <Route path='/home' element={user ? <Home /> : <Navigate to="/login" />} />
           <Route path='/collections' element={user ? <Collections /> : <Navigate to="/login" />} />
           <Route path='/radio' element={user ? <Radio /> : <Navigate to="/login" />} />
@@ -43,35 +54,29 @@ function App() {
           <Route path='/home/playlist/:playlist_id&:playlist_name' element={user ? <HomePlaylist /> : <Navigate to="/login" />} />
           <Route path='/collections/playlist/:playlist_id' element={user ? <CollectionsPlaylist /> : <Navigate to="/login" />} />
         </Routes>
-        <BottomBar />
       </AnimatePresence>
     )
   }
 
 
   return (
-    // <ChakraProvider>
     <BrowserRouter >
-      {/* <div className="App"> */}
-      {!user ? (
-        <div>
-          <Routes>
-            <Route path='/' element={!user ? <LandingPage /> : <Navigate to="/" />} />
-            <Route path='/signup' element={!user ? <Signup /> : <Navigate to="/" />} />
-            <Route exact path='/login' element={!user ? <Login /> : <Navigate to="/" />} />
-          </Routes>
-        </div>
-      ) : (
-        <div className="App">
-          <SideBar />
-          <TopBar />
-          <PageTransition />
-          <BottomBar />
-        </div>
-      )}
-      {/* </div> */}
+      <div className="App">
+        {user ? (
+          <div>
+            <SideBar />
+            <TopBar />`
+            <AuthPageTransition />
+            <BottomBar />
+          </div>
+        ) : (
+          <div>
+            <Navbar />
+            <UnauthPageTransition />
+          </div>
+        )}
+      </div>
     </BrowserRouter>
-    // </ChakraProvider>
   );
 }
 

@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const accountRoutes = require("./router/accountRoutes")
 const playlistRoutes = require("./router/playlistRoutes")
 const songRoutes = require("./router/songRoutes")
+const userRoutes = require("./router/userRoutes")
 const Grid = require('gridfs-stream');
 
 
@@ -19,14 +20,15 @@ app.use(morgan('dev'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
-// app.use(
-//     cors({
-//         origin: "*",
-//         credentials: true
-//     })
-// )
+app.use(
+    cors({
+        origin: "*",
+        credentials: true
+    })
+)
 app.use('/public', express.static('public'))
-app.use('/api/accounts', accountRoutes)
+app.use('/api/auth', accountRoutes)
+app.use('/api/user', userRoutes)
 app.use('/api/playlists', playlistRoutes)
 app.use('/api/song', songRoutes)
 

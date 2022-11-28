@@ -31,6 +31,20 @@ exports.loginUser = async (req, res) => {
     }
 }
 
+exports.getUser = async (req, res) => {
+
+    try {
+        const user = await Account.findById({ _id: req.user._id })
+        res.status(200).json({
+            username: user.username,
+            email: user.email,
+            avatar: user.avatar
+        })
+    } catch (error) {
+        res.status(404).json({ error: 'User not found' })
+    }
+}
+
 // exports.deleteUser = (req, res) => {
 //     res.json({ message: "Delete user" })
 // }

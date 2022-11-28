@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './scss/auth.scss'
 import { useSignup } from './hooks/useSignup';
+import { motion } from 'framer-motion';
+import PageTransition from './pageTransition';
 
 const Signup = () => {
 
@@ -9,7 +11,6 @@ const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('')
     const { signup, error, isLoading } = useSignup()
-    const navigate = useNavigate()
 
     const handleClick = async (e) => {
         e.preventDefault()
@@ -18,18 +19,9 @@ const Signup = () => {
     }
 
     return (
-        <div className="auth-page">
-            <nav className='auth-nav'>
-                <div onClick={() => navigate('/')}>
-                    <img src={require('./images/logo.png')} alt="" />
-                    <h1>Musica</h1>
-                </div>
-                <div>
-                    <Link to='/login'>Login</Link>
-                    <Link to='/signup'>Sign up</Link>
-                </div>
-            </nav>
-            <main>
+        <PageTransition>
+            <motion.div className="auth-page">
+                {/* <main> */}
                 <div className='auth-card'>
                     <h1>Welcome! Sign up and start listening</h1>
                     <form action="" onSubmit={handleClick}>
@@ -46,8 +38,9 @@ const Signup = () => {
                         {error && <div className="error">{error}</div>}
                     </form>
                 </div>
-            </main>
-        </div>
+                {/* </main> */}
+            </motion.div>
+        </PageTransition>
     );
 }
 

@@ -1,15 +1,13 @@
 aside {
-    /* height: 100%; */
     width: 52px;
     display: flex;
     flex-direction: column;
-    /* margin: 0px 20px 20px; */
     background-color: rgba(29, 33, 35, 0);
-    /* background-color: rgb(13, 158, 231); */
     position: fixed;
     left: 20px;
     top: 0;
     bottom: 125px;
+    z-index: 2;
 
     button {
         background-color: rgba(29, 33, 35, 0);

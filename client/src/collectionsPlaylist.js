@@ -55,12 +55,10 @@ const CollectionsPlaylist = () => {
         if (!response.ok) {
             setErrorPlaylist(json)
             setFetchingPlaylist(false)
-            console.log(json)
         }
 
         if (response.ok) {
             setPlaylist(json)
-            console.log(json)
 
             const duration = convert(json.duration / 1000)
 
@@ -96,14 +94,14 @@ const CollectionsPlaylist = () => {
                 <div
                     className="playlistback"
                     style={{
-                        backgroundImage: `url(${playlist.image})`,
+                        backgroundImage: `url(${playlist.image ? playlist.image : require('./images/defaultImg.png')})`,
                         backgroundPosition: 'center',
                         backgroundSize: 'cover',
                         backgroundRepeat: "no-repeat",
                     }}>
                     <div className="playlist">
                         <header className="playlist_header">
-                            <img src={playlist.image} alt="" />
+                            <img src={playlist.image ? playlist.image : require('./images/defaultImg.png')} alt="" />
                             <div className="playlist_info">
                                 <h1>{playlist.name}</h1>
                                 <p>{playlist.description}</p>
@@ -128,7 +126,7 @@ const CollectionsPlaylist = () => {
                             {playlist.songs.map((song, index) => (
                                 <div className="playlist-song" key={index}>
                                     <div className="playlist-song-avartar">
-                                        <img src={song.image.src} alt="" />
+                                        <img src={song.image.src ? song.image.src : require('./images/defaultImg.png')} alt="" />
                                         <button onClick={() => { addSong(index); removeSong(index) }}>
                                             <svg className={likedSong.includes(index) ? 'songLiked' : ''} width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path fillRule="evenodd" clipRule="evenodd" d="M2.43496 10.3718C1.54079 7.58016 2.58662 4.10933 5.51746 3.16599C7.05912 2.66849 8.96162 3.08349 10.0425 4.57433C11.0616 3.02849 13.0191 2.67183 14.5591 3.16599C17.4891 4.10933 18.5408 7.58016 17.6475 10.3718C16.2558 14.7968 11.4 17.1018 10.0425 17.1018C8.68579 17.1018 3.87329 14.8485 2.43496 10.3718Z" stroke="#EFEEE0" strokeWidth="0.625" strokeLinecap="round" strokeLinejoin="round" />

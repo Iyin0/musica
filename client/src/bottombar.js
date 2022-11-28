@@ -2,6 +2,7 @@ import './scss/bottombar.scss';
 import { useRef, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from './hooks/useAuthContext';
 
 const BottomBar = () => {
 
@@ -15,8 +16,8 @@ const BottomBar = () => {
     const [currentTime, setCurrentTime] = useState(0)
     const [duration, setDuration] = useState(0)
     const [progressBar, setProgressBar] = useState()
+    const { user } = useAuthContext()
     // const [playing, setPlaying] = useState(null)
-
 
     const skipSong = (forward = true) => {
         setDuration(audioEl.current.duration)
@@ -44,6 +45,18 @@ const BottomBar = () => {
         }
     }
 
+    const stream = async () => {
+        if (currentSongIndex) {
+            const response = await fetch(`http://localhost:5000/api/song/${playables[currentSongIndex].song_id}`, {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`,
+                }
+            })
+            audioEl.src = response
+        }
+
+    }
+
     useEffect(() => {
         if (isPlaying) {
             audioEl.current.play()
@@ -57,11 +70,10 @@ const BottomBar = () => {
         setIsPlaying(playbackState)
     }, [playbackState])
 
-    // useEffect(async () => {
-    //     const response = await fetch(`http://localhost:5000/api/song/${playables[currentSongIndex].song_id}`)
-
-    //     if (response.okay) setPlaying(response)
-    // }, [currentSongIndex])
+    useEffect(() => {
+        stream()
+        // eslint-disable-next-line
+    }, [currentSongIndex])
 
 
     const onplaying = () => {
@@ -97,7 +109,8 @@ const BottomBar = () => {
                 <div className="current-playing">
                     <p className="current-song">{playables.length > 0 ? playables[currentSongIndex].title : '-'}</p>
                     <p className="current-artist">{playables.length > 0 ? playables[currentSongIndex].artist : '-'}</p>
-                    <audio ref={audioEl} src={playables.length > 0 ? `http://localhost:5000/api/song/${playables[currentSongIndex].song_id}` : ''} onTimeUpdate={() => onplaying()}></audio>
+                    {/* <audio ref={audioEl} src={playables.length > 0 ? `http://localhost:5000/api/song/${playables[currentSongIndex].song_id}` : ''} onTimeUpdate={() => onplaying()}></audio> */}
+                    <audio ref={audioEl} onTimeUpdate={() => onplaying()}></audio>
                 </div>
             </div>
             <div className="bottom-middle">

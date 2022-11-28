@@ -222,7 +222,7 @@ exports.getPlaylist = async (req, res) => {
 
     else {
         if (playlist.image === '') {
-            image = 'http://localhost:5000/public/defaultImg.png'
+            image = ''
             // image = fs.writeFileSync(__dirname + '../public/defaultImg.png', buffer)
         }
         else {

@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const account = require('../controller/accountController');
+const requireAuth = require('../middleware/requireAuth')
 
-router.post("/signup", account.signupUser)
-router.post("/login", account.loginUser)
+router.use(requireAuth) //  require auth for all routes
 router.get("/", account.getUser)
 
 

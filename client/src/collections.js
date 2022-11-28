@@ -126,7 +126,6 @@ const Collections = () => {
         if (response.ok) {
             setUploadingPlaylist(false)
             setUploadSuccess('Playlist Created!!!')
-            console.log(json)
         }
     }
 
@@ -157,8 +156,6 @@ const Collections = () => {
 
         if (response.ok) {
             setPlaylists(json)
-            console.log(json)
-            console.log(json)
             setFetchingPlaylist(null)
             setErrorFetchingPlaylist(null)
         }
@@ -194,7 +191,7 @@ const Collections = () => {
                                         <div className='playlist-container'>
                                             {playlist.songs.slice(0, 10).map((song, index) => (
                                                 <div className='playlist-items' key={index} >
-                                                    <img src={song.image.src} alt="" />
+                                                    <img src={song.image.src ? song.image.src : require('./images/defaultImg.png')} alt="" />
                                                     <p className="collection-name">{song.title}</p>
                                                     <p className="collection-artist">{song.artist}</p>
                                                     <button onClick={() => {

@@ -6,7 +6,7 @@ const Radio = () => {
     return (
         <PageTransition>
             <motion.div className="radio">
-                <h1>RADIO</h1>
+                <h1>Radio Coming Soon!!!</h1>
             </motion.div>
         </PageTransition>
     );
