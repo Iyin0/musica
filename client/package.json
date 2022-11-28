@@ -1,5 +1,5 @@
 {
-  "proxy": "http://localhost:5000",
+  "proxy": "http://musica-by-iyin-api.onrender.com",
   "name": "musica",
   "version": "0.1.0",
   "private": true,

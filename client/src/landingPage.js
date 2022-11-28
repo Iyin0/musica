@@ -9,10 +9,8 @@ const LandingPage = () => {
     return (
         <PageTransition>
             <motion.div className="auth-page">
-                {/* <main> */}
                 <p className='landing-text'>Enjoy Playlists from around the world!!!</p>
                 <button className='landing-btn' onClick={() => navigate('/login')}>Jump back in</button>
-                {/* </main> */}
             </motion.div>
         </PageTransition>
     );

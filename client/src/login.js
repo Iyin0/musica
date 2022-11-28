@@ -21,7 +21,6 @@ const Login = () => {
     return (
         <PageTransition>
             <motion.div className="auth-page">
-                {/* <main> */}
                 <div className='auth-card'>
                     <h1>Welcome! Login to start listening</h1>
                     <form action="" onSubmit={handleClick}>
@@ -36,7 +35,6 @@ const Login = () => {
                         {error && <div className="error">{error}</div>}
                     </form>
                 </div>
-                {/* </main> */}
             </motion.div>
         </PageTransition>
     );
