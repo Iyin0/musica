@@ -1,3 +1,4 @@
-[ [redirects]] from="/api*"
-to="http://musica-by-iyin-api.onrender.com"
-status=200
+[[redirects]]
+    from = '/api/*'
+    to = 'http://musica-by-iyin-api.onrender.com'
+    status = 200
