@@ -1,26 +1,25 @@
 import './scss/bottombar.scss';
 import { useRef, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { useAuthContext } from './hooks/useAuthContext';
 
 const BottomBar = () => {
 
-    const trackSlide = useRef();
     const audioEl = useRef()
-    const navigate = useNavigate()
     const playables = useSelector((state) => state.playerState.songs)
     const playbackState = useSelector((state) => state.playerState.playback)
     const [currentSongIndex, setCurrentSongIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false)
     const [currentTime, setCurrentTime] = useState(0)
     const [duration, setDuration] = useState(0)
-    const [progressBar, setProgressBar] = useState()
+    const [progressBar, setProgressBar] = useState(0)
     const { user } = useAuthContext()
-    // const [playing, setPlaying] = useState(null)
+
+    // const ctx = useRef(null)
+    // ctx.current = new AudioContext()
 
     const skipSong = (forward = true) => {
-        setDuration(audioEl.current.duration)
+        setProgressBar(0)
         if (forward) {
             setCurrentSongIndex(() => {
                 let temp = currentSongIndex;
@@ -46,39 +45,48 @@ const BottomBar = () => {
     }
 
     const stream = async () => {
-        if (currentSongIndex) {
-            const response = await fetch(`http://localhost:5000/api/song/${playables[currentSongIndex].song_id}`, {
+        try {
+            setProgressBar(0)
+            audioEl.current.src = ''
+            const response = await fetch(`/api/song/${playables[currentSongIndex].song_id}`, {
+                responseType: 'blob',
                 headers: {
                     'Authorization': `Bearer ${user.token}`,
+                    'Content-type': 'audio/mpeg'
                 }
             })
-            audioEl.src = response
+            const blob = await response.blob()
+            audioEl.current.src = window.URL.createObjectURL(blob)
+        } catch (error) {
+            console.log(error)
         }
-
     }
 
-    useEffect(() => {
-        if (isPlaying) {
-            audioEl.current.play()
-        }
-        else {
-            audioEl.current.pause()
-        }
-    })
+    // const playSong = (buffer) => {
+    //     const source = ctx.current.createBufferSource()
+    //     console.log(source)
+    //     source.buffer = buffer
+    //     source.connect(ctx.current.destination)
+    //     // source.start()
+    //     setPlaying(buffer)
+    //     setIsPlaying(true)
+    // }
+
 
     useEffect(() => {
         setIsPlaying(playbackState)
     }, [playbackState])
 
     useEffect(() => {
-        stream()
+        if (playables[currentSongIndex]) stream()
         // eslint-disable-next-line
-    }, [currentSongIndex])
+    }, [playables, playables[currentSongIndex]])
 
 
     const onplaying = () => {
 
-        setCurrentTime(audioEl.current.currentTime)
+        setCurrentTime(Math.round(audioEl.current.currentTime))
+        setDuration(Math.round(audioEl.current.duration))
 
         if (audioEl.current.currentTime === audioEl.current.duration) {
             skipSong()
@@ -92,12 +100,15 @@ const BottomBar = () => {
     }
 
     const playback = () => {
-        if (playables.length !== 0) {
+
+        if (isPlaying === false) {
+            // ctx.current.resume()
+            audioEl.current.play()
             setIsPlaying(!isPlaying)
-        }
-        else {
-            navigate('/collections')
-            alert('Click on the "Add songs" button to add your songs')
+        } else {
+            // ctx.current.suspend()
+            audioEl.current.pause()
+            setIsPlaying(!isPlaying)
         }
     }
 
@@ -109,8 +120,7 @@ const BottomBar = () => {
                 <div className="current-playing">
                     <p className="current-song">{playables.length > 0 ? playables[currentSongIndex].title : '-'}</p>
                     <p className="current-artist">{playables.length > 0 ? playables[currentSongIndex].artist : '-'}</p>
-                    {/* <audio ref={audioEl} src={playables.length > 0 ? `http://localhost:5000/api/song/${playables[currentSongIndex].song_id}` : ''} onTimeUpdate={() => onplaying()}></audio> */}
-                    <audio ref={audioEl} onTimeUpdate={() => onplaying()}></audio>
+                    <audio autoPlay={true} ref={audioEl} onTimeUpdate={() => onplaying()}></audio>
                 </div>
             </div>
             <div className="bottom-middle">
@@ -128,7 +138,7 @@ const BottomBar = () => {
                             <path d="M2.50668 13.3926C2.23335 13.3926 2.00668 13.166 2.00668 12.8926V4.65265C2.00668 4.37932 2.23335 4.15265 2.50668 4.15265C2.78002 4.15265 3.00668 4.37932 3.00668 4.65265V12.8926C3.00668 13.166 2.78002 13.3926 2.50668 13.3926Z" fill="white" />
                         </svg>
                     </button>
-                    <button className={isPlaying ? 'playback-btn pause-playback' : 'playback-btn play-playback'} onClick={() => playback()}>
+                    <button className={isPlaying ? 'playback-btn pause-playback' : 'playback-btn play-playback'} onClick={() => playback()} role="switch" aria-checked="false">
                         <svg width="9" height="10" viewBox="0 0 9 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M0.333344 4.77262V2.9536C0.333344 0.619203 1.98563 -0.335721 4.0017 0.831476L5.57814 1.74094L7.15463 2.65041C9.17069 3.81761 9.17069 5.72764 7.15463 6.89484L5.57814 7.80431L4.0017 8.71377C1.98563 9.88097 0.333344 8.92605 0.333344 6.59165V4.77262Z" fill="#EFEEE0" />
                         </svg>
@@ -148,7 +158,7 @@ const BottomBar = () => {
                     </button>
                 </div>
                 <div className="current-lap">
-                    <input type="range" ref={trackSlide} min={0} max={duration} value={currentTime} onInput={(e) => audioEl.current.currentTime = e.target.value} />
+                    <input type="range" min={0} max={duration ? duration : 0} value={currentTime} onInput={(e) => audioEl.current.currentTime = e.target.value} />
                     <div className="progress-bar" style={{ width: `${progressBar}%` }}></div>
                 </div>
             </div>
