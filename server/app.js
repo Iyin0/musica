@@ -22,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(
     cors({
-        origin: "*",
+        origin: ['https://localhost:3000', 'https://musica-by-iyin.netlify.app'],
         credentials: true
     })
 )
