@@ -1,4 +1,4 @@
 [[redirects]]
     from = '/api/*'
-    to = 'http://musica-by-iyin-api.onrender.com/:splat'
+    to = 'https://musica-by-iyin-api.onrender.com/:splat'
     status = 200
