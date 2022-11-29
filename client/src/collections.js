@@ -29,7 +29,7 @@ const Collections = () => {
 
         e.preventDefault()
 
-        let newSongs = []
+        let newSongs = playlistSongs
 
         let input = document.createElement('input');
         input.type = 'file';
@@ -107,7 +107,6 @@ const Collections = () => {
 
         const response = await fetch('https://musica-by-iyin-api.onrender.com/api/playlists', {
             method: 'POST',
-            // mode: 'no-cors',
             headers: {
                 // eslint-disable-next-line
                 'Authorization': `Bearer ${user.token}`,
