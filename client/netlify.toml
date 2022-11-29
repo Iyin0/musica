@@ -1,1 +1,4 @@
-/api/*  http://musica-by-iyin-api.onrender.com/:splat  200
+[[redirects]]
+    from = '/api/*'
+    to = 'http://musica-by-iyin-api.onrender.com/:splat'
+    status = 200
