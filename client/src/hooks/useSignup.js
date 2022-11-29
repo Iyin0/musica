@@ -32,7 +32,7 @@ export const useSignup = () => {
             //  update the AuthContext
             dispatch({ type: 'LOGIN', payload: json })
             setIsLoading(false)
-            navigate('/welcome')
+            navigate('/')
         }
     }
 
