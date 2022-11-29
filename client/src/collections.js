@@ -105,7 +105,7 @@ const Collections = () => {
             formData.append("songs", song)
         })
 
-        const response = await fetch('/api/playlists', {
+        const response = await fetch('https://musica-by-iyin-api.onrender.com/api/playlists', {
             method: 'POST',
             // mode: 'no-cors',
             headers: {
@@ -141,7 +141,7 @@ const Collections = () => {
         setErrorFetchingPlaylist(null)
         setFetchingPlaylist(true)
 
-        const response = await fetch('/api/playlists', {
+        const response = await fetch('https://musica-by-iyin-api.onrender.com/api/playlists', {
             headers: {
                 'Authorization': `Bearer ${user.token}`
             },

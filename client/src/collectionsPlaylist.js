@@ -44,7 +44,7 @@ const CollectionsPlaylist = () => {
         setErrorPlaylist(false)
         setFetchingPlaylist(true)
 
-        const response = await fetch(`/api/playlists/${playlistID.playlist_id}`, {
+        const response = await fetch(`https://musica-by-iyin-api.onrender.com/api/playlists/${playlistID.playlist_id}`, {
             headers: {
                 'Authorization': `Bearer ${user.token}`
             }

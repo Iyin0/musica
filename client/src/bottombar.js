@@ -48,7 +48,7 @@ const BottomBar = () => {
         try {
             setProgressBar(0)
             audioEl.current.src = ''
-            const response = await fetch(`/api/song/${playables[currentSongIndex].song_id}`, {
+            const response = await fetch(`https://musica-by-iyin-api.onrender.com/api/song/${playables[currentSongIndex].song_id}`, {
                 responseType: 'blob',
                 headers: {
                     'Authorization': `Bearer ${user.token}`,
