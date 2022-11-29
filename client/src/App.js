@@ -45,7 +45,7 @@ function App() {
     return (
       <AnimatePresence mode='wait' >
         <Routes key={location.pathname} location={location}>
-          <Route path='/welcome' element={user ? <Welcome /> : <Navigate to="/login" />} />
+          <Route path='/' element={user ? <Welcome /> : <Navigate to="/login" />} />
           <Route path='/home' element={user ? <Home /> : <Navigate to="/login" />} />
           <Route path='/collections' element={user ? <Collections /> : <Navigate to="/login" />} />
           <Route path='/radio' element={user ? <Radio /> : <Navigate to="/login" />} />
