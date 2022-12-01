@@ -2,10 +2,12 @@ import './scss/collections.scss';
 import { motion } from "framer-motion";
 import PageTransition from './pageTransition';
 import { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { playPlaylist, togglePlayback } from "./store/player";
 import { Link } from 'react-router-dom';
 import { useAuthContext } from './hooks/useAuthContext';
+import Loading from './loading';
+import { setColPlay } from './store/playlistData';
 
 
 const Collections = () => {
@@ -16,7 +18,7 @@ const Collections = () => {
     const [uploadingPlaylist, setUploadingPlaylist] = useState(null)
     const [uploadSuccess, setUploadSuccess] = useState(null)
     const dispatch = useDispatch();
-    const [playlists, setPlaylists] = useState(null)
+    const playlists = useSelector((state) => state.displayPlaylistData.collectionPlaylists)
     const [errorFetchingPlaylist, setErrorFetchingPlaylist] = useState(null)
     const [fetchingPlaylist, setFetchingPlaylist] = useState(null)
     const [playlistName, setPlaylistName] = useState('')
@@ -132,38 +134,45 @@ const Collections = () => {
 
         if (!user) {
             setFetchingPlaylist(false)
-            setPlaylists(null)
+            dispatch(setColPlay(null))
             setErrorFetchingPlaylist('You must be logged in')
             return
         }
 
-        setErrorFetchingPlaylist(null)
-        setFetchingPlaylist(true)
-
-        const response = await fetch('https://musica-by-iyin-api.onrender.com/api/playlists', {
-            headers: {
-                'Authorization': `Bearer ${user.token}`
-            },
-        })
-
-        const json = await response.json()
-
-        if (!response.ok) {
-            setErrorFetchingPlaylist(json.error)
-            setFetchingPlaylist(null)
-        }
-
-        if (response.ok) {
-            setPlaylists(json)
-            setFetchingPlaylist(null)
+        if (!playlists) {
             setErrorFetchingPlaylist(null)
+            setFetchingPlaylist(true)
+
+        }
+        try {
+            const response = await fetch('https://musica-by-iyin-api.onrender.com/api/playlists', {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`
+                },
+            })
+
+            const json = await response.json()
+
+            if (!response.ok) {
+                setErrorFetchingPlaylist(json.error)
+                setFetchingPlaylist(null)
+            }
+
+            if (response.ok) {
+                dispatch(setColPlay(json))
+                setFetchingPlaylist(null)
+                setErrorFetchingPlaylist(null)
+            }
+        } catch (error) {
+            setErrorFetchingPlaylist(error.message)
+            setFetchingPlaylist(null)
         }
     }
 
     useEffect(() => {
         getAllPlaylist()
         // eslint-disable-next-line
-    }, [user])
+    }, [])
 
     return (
         <PageTransition>
@@ -180,7 +189,7 @@ const Collections = () => {
                 ) : (
                     <main className='collection-page'>
                         {playlists &&
-                            <div className="user-collections">
+                            <motion.div className="user-collections">
                                 {playlists.map((playlist, index) => (
                                     <div className="playlists" key={index}>
                                         <div className='playlist-header'>
@@ -208,18 +217,18 @@ const Collections = () => {
                                         </div>
                                     </div>
                                 ))}
-                            </div>
+                            </motion.div>
                         }
                         {fetchingPlaylist &&
-                            <div className="fetching-playlist">
-                                <p>Fetching Playlist</p>
-                            </div>
+                            <motion.div className="fetching-error">
+                                <Loading />
+                            </motion.div>
                         }
                         {errorFetchingPlaylist &&
-                            <div className="error-playlist">
+                            <motion.div className="fetching-error">
                                 <p>{errorFetchingPlaylist}</p>
                                 <button onClick={() => getAllPlaylist()}>Try again</button>
-                            </div>
+                            </motion.div>
                         }
 
                         {user && (
@@ -228,7 +237,7 @@ const Collections = () => {
 
                         {playlistPageState &&
 
-                            <div className='playlist-form-back'>
+                            <motion.div className='playlist-form-back'>
                                 <div className="playlist-form-container">
                                     <div className='close-add-playlist'>
                                         <h2>Create New Playlist</h2>
@@ -249,21 +258,21 @@ const Collections = () => {
                                         </div>
                                     </form>
                                 </div>
-                            </div>
+                            </motion.div>
                         }
 
                         {uploadingPlaylist && (
-                            <div className="playlist-form-back">
+                            <motion.div className="playlist-form-back">
                                 <div className="playlist-form-container">
                                     <div className="playlist-upload">
                                         <p>Uplaoding Playlist...</p>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         )}
 
                         {errorUploadingPlaylist && (
-                            <div className="playlist-form-back">
+                            <motion.div className="playlist-form-back">
                                 <div className="playlist-form-container">
                                     <div className="playlist-upload">
                                         <p>{errorUploadingPlaylist}</p>
@@ -273,18 +282,18 @@ const Collections = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         )}
 
                         {uploadSuccess && (
-                            <div className="playlist-form-back">
+                            <motion.div className="playlist-form-back">
                                 <div className="playlist-form-container">
                                     <div className="playlist-upload">
                                         <p>{uploadSuccess}</p>
                                         <button onClick={() => { getAllPlaylist(); clearField(); setUploadSuccess(false) }}>Okay</button>
                                     </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         )}
                     </main>
                 )}

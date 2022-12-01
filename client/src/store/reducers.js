@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
 import sideNavbarState from './sideNav'
 import player from './player'
-import readPlaylist from './playlists'
+import playlistData from './playlistData'
 
 export default configureStore({
     reducer: {
         sideNavState: sideNavbarState,
         playerState: player,
-        readPlaylist: readPlaylist
+        displayPlaylistData: playlistData
     }
 })

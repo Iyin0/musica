@@ -6,6 +6,7 @@ import convert from "./convert";
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux';
 import { useAuthContext } from './hooks/useAuthContext';
+import Loading from "./loading";
 
 const CollectionsPlaylist = () => {
 
@@ -81,7 +82,7 @@ const CollectionsPlaylist = () => {
         <PageTransition>
             {fetchingPlaylist &&
                 <div className="fetching-playlist playlist">
-                    <p>Fetching Playlist</p>
+                    <Loading />
                 </div>
             }
             {errorPlaylist &&
@@ -135,8 +136,7 @@ const CollectionsPlaylist = () => {
                                         </button>
                                     </div>
                                     <p className="playlist-song-owner">{song.title} ~ {song.artist}</p>
-                                    {/* <p>{song.type}</p> */}
-                                    <p>Single</p>
+                                    <p>{song.album ? song.album : "Single"}</p>
                                     <p>{convert(song.duration / 1000)}</p>
                                     <button>
                                         <svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">

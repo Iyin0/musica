@@ -7,7 +7,6 @@ import Radio from './radio';
 import SideBar from "./sidebar";
 import TopBar from "./topbar";
 import Videos from './videos';
-import Welcome from './welcome';
 import { AnimatePresence } from "framer-motion"
 import HomePlaylist from './homePlaylist';
 import CollectionsPlaylist from './collectionsPlaylist';
@@ -16,6 +15,7 @@ import Login from './login';
 import { useAuthContext } from './hooks/useAuthContext';
 import LandingPage from './landingPage';
 import Navbar from './navbar';
+import GenrePlaylist from './genrePlaylist';
 
 
 function App() {
@@ -31,9 +31,9 @@ function App() {
 
       <AnimatePresence mode='wait' >
         <Routes key={location.pathname} location={location}>
-          <Route path='/' element={!user ? <LandingPage /> : <Navigate to="/home" />} />
-          <Route path='/signup' element={!user ? <Signup /> : <Navigate to="/home" />} />
-          <Route path='/login' element={!user ? <Login /> : <Navigate to="/home" />} />
+          <Route path='/' element={!user ? <LandingPage /> : <Navigate to="/" />} />
+          <Route path='/signup' element={!user ? <Signup /> : <Navigate to="/" />} />
+          <Route path='/login' element={!user ? <Login /> : <Navigate to="/" />} />
         </Routes>
       </AnimatePresence>
     )
@@ -45,13 +45,13 @@ function App() {
     return (
       <AnimatePresence mode='wait' >
         <Routes key={location.pathname} location={location}>
-          <Route path='/' element={user ? <Welcome /> : <Navigate to="/login" />} />
-          <Route path='/home' element={user ? <Home /> : <Navigate to="/login" />} />
+          <Route path='/' element={user ? <Home /> : <Navigate to="/login" />} />
           <Route path='/collections' element={user ? <Collections /> : <Navigate to="/login" />} />
           <Route path='/radio' element={user ? <Radio /> : <Navigate to="/login" />} />
           <Route path='/videos' element={user ? <Videos /> : <Navigate to="/login" />} />
           <Route path='/profile' element={user ? <Profile /> : <Navigate to="/login" />} />
-          <Route path='/home/playlist/:playlist_id&:playlist_name' element={user ? <HomePlaylist /> : <Navigate to="/login" />} />
+          <Route path='/home/playlist/:playlist_id' element={user ? <HomePlaylist /> : <Navigate to="/login" />} />
+          <Route path='/home/genre/:genre_id' element={user ? <GenrePlaylist /> : <Navigate to="/login" />} />
           <Route path='/collections/playlist/:playlist_id' element={user ? <CollectionsPlaylist /> : <Navigate to="/login" />} />
         </Routes>
       </AnimatePresence>

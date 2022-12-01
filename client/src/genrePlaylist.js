@@ -6,11 +6,12 @@ import convert from "./convert";
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux';
 
-const HomePlaylist = () => {
+
+const GenrePlaylist = () => {
 
     const playlist_info = useParams();
-    const songs = useSelector((state) => state.displayHomeData.topChart)
-    const playlist = songs.find(a => a._id === playlist_info.playlist_id)
+    const songs = useSelector((state) => state.displayHomeData.data)
+    const playlist = songs[playlist_info.genre_id]
     const [likedSong, setLikedSong] = useState([])
     const [duration, setDuration] = useState('')
     const dispatch = useDispatch();
@@ -45,18 +46,18 @@ const HomePlaylist = () => {
             <div
                 className="playlistback"
                 style={{
-                    backgroundImage: `url(${playlist.image})`,
+                    backgroundImage: `url(${require('./images/defaultImg.png')})`,
                     backgroundPosition: 'center',
                     backgroundSize: 'cover',
                     backgroundRepeat: "no-repeat",
                 }}>
                 <div className="playlist">
                     <header className="playlist_header">
-                        <img src={playlist.image} alt="" />
+                        <img src={require('./images/defaultImg.png')} alt="" />
                         <div className="playlist_info">
-                            <h1>{playlist.name}</h1>
-                            <p>{playlist.description}</p>
-                            <p>{playlist.length} songs ~ {duration}</p>
+                            <h1>{playlist.genre}</h1>
+                            <p>{playlist.description ? playlist.description : ""}</p>
+                            <p>{playlist.songs.length} songs ~ {duration}</p>
                             <div className="playlist_actions">
                                 <button onClick={() => { dispatch(playPlaylist(playlist.songs)); dispatch(togglePlayback(true)) }}>
                                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -113,4 +114,4 @@ const HomePlaylist = () => {
     );
 }
 
-export default HomePlaylist;
+export default GenrePlaylist;

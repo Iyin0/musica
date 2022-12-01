@@ -1,17 +1,8 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './scss/welcome.scss';
 import { motion } from "framer-motion";
 
-const Welcome = () => {
+const Loading = () => {
 
-    const navigate = useNavigate()
-
-    useEffect(() => {
-        setTimeout(() => {
-            navigate('/home')
-        }, 5000);
-    })
 
     return (
         <motion.div className="welcome">
@@ -35,4 +26,4 @@ const Welcome = () => {
 }
 
 
-export default Welcome;
+export default Loading;

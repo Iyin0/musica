@@ -9,32 +9,32 @@ const TopBar = () => {
 
     const [searchPage, setSearchPage] = useState(false)
     const sideNavState = useSelector((state) => state.sideNavState.value)
-    const allPlaylists = useSelector((state) => state.readPlaylist.playlists)
+    // const allPlaylists = useSelector((state) => state.readPlaylist.playlists)
     const toggleSideNavbar = useDispatch()
     const [search, setsearch] = useState('')
     const [songs, setSongs] = useState([])
-    const [library, setLibrary] = useState([])
+    // const [library, setLibrary] = useState([])
     const dispatch = useDispatch();
 
     const searchSongs = () => {
-        const songs = library.filter((e) => e.title.includes(search) || e.artist.includes(search) || e.album.includes(search) || e.genre.includes(search))
-        setSongs(songs)
+        // const songs = library.filter((e) => e.title.includes(search) || e.artist.includes(search) || e.album.includes(search) || e.genre.includes(search))
+        // setSongs(songs)
     }
 
 
-    useEffect(() => {
-        if (search === '') setSongs(library)
-    }, [search, library])
+    // useEffect(() => {
+    //     if (search === '') setSongs(library)
+    // }, [search, library])
 
-    useEffect(() => {
-        let updateLib = []
-        allPlaylists.forEach((playlist) => {
-            playlist.playlists.forEach((songs) => {
-                updateLib.push(songs)
-            })
-        })
-        setLibrary(updateLib)
-    }, [allPlaylists])
+    // useEffect(() => {
+    //     let updateLib = []
+    //     allPlaylists.forEach((playlist) => {
+    //         playlist.playlists.forEach((songs) => {
+    //             updateLib.push(songs)
+    //         })
+    //     })
+    //     setLibrary(updateLib)
+    // }, [allPlaylists])
 
     return (
         <nav className='topbar'>

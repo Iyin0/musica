@@ -6,7 +6,6 @@ const mm = require('music-metadata');
 const mongodb = require('mongodb');
 const MongoClient = require('mongodb').MongoClient;
 const { Readable } = require('stream');
-const fs = require('fs');
 
 let db;
 MongoClient.connect(process.env.MONGO_URI, (err, client) => {
@@ -75,22 +74,37 @@ exports.addNewPlaylist = async (req, res, next) => {
 
 }
 
-//  to delete a playlist
-exports.deletePlaylist = async (req, res) => {
+//  to delete a playlist {_id: ObjectId('63821848745bbd3e95fd6aa5')}
+exports.deletePlaylist = async (req, res, next) => {
 
     const { id } = req.params
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "Playlist not found" })
+        return res.status(404).json({ error: "Invalid ID" })
     }
 
-    const playlist = await Playlist.findOneAndDelete({ _id: id })
+    // try {
+    const playlist = await Playlist.findById({ _id: id })
+
+    const { image, songs } = playlist
 
     if (!playlist) {
         return res.status(400).json({ error: "Playlist not found" })
     }
 
-    res.status(200).json({ message: `${playlist.name} deleted successfully!!!` })
+    if (image !== '') await deleteImage(image.img_id)
+
+    await Promise.all(songs.map(song => deleteSong(song)))
+
+    const del_playlist = await Playlist.findOneAndDelete({ _id: id })
+
+    if (playlist) {
+        res.status(200).json({ message: `${del_playlist.name} deleted successfully!!!` })
+    }
+    else {
+        res.status(400).json({ error: `Unable to delete ${del_playlist.name}` })
+    }
+
 }
 
 // to update a playlist name and description
@@ -99,7 +113,7 @@ exports.updatePlaylistInfo = async (req, res) => {
     const { id } = req.params
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "Playlist not found" })
+        return res.status(404).json({ error: "Invalid ID" })
     }
 
     const playlist = await Playlist.findOneAndUpdate({ _id: id }, { name: req.body.name, description: req.body.description }, { new: true })
@@ -122,13 +136,17 @@ exports.updatePlaylistImage = async (req, res) => {
 
     const { image } = req.files
 
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).json({ error: "Invalid ID" })
+    }
+
+    if (!image) {
+        res.status(400).json({ error: 'An Image must be uploaded' })
+    }
+
     if (image) {
         img_info = await Promise.all(image.map(image => addImage(image)))
         img_id = await getImageId(img_info)
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "Playlist not found" })
     }
 
     if (img_id) {
@@ -156,7 +174,7 @@ exports.updatePlaylistSongs = async (req, res) => {
     let duration;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(404).json({ error: "Playlist not found" })
+        return res.status(404).json({ error: "Invalid ID" })
     }
 
     if (!songs) {
@@ -174,7 +192,7 @@ exports.updatePlaylistSongs = async (req, res) => {
     const playlist = await Playlist.findById(id)
 
     if (!playlist) {
-        return res.status(404).json({ error: "Playlist not found" })
+        return res.status(404).json({ error: "Playlists not found" })
     }
     else {
 
@@ -211,7 +229,7 @@ exports.getPlaylist = async (req, res) => {
     let image;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ error: "Playlist not found" })
+        return res.status(400).json({ error: "Invalid ID" })
     }
 
     const playlist = await Playlist.findById(id)
@@ -223,7 +241,6 @@ exports.getPlaylist = async (req, res) => {
     else {
         if (playlist.image === '') {
             image = ''
-            // image = fs.writeFileSync(__dirname + '../public/defaultImg.png', buffer)
         }
         else {
             image = await readImage(playlist.image.img_id, playlist.image.format)
@@ -246,7 +263,6 @@ const addSongs = async (song) => {
     return new Promise((resolve, reject) => {
 
         let song_id;
-        let songErr_id;
 
         // Covert buffer to Readable Stream
         const songStream = new Readable();
@@ -261,10 +277,9 @@ const addSongs = async (song) => {
         let id = uploadStream.id;
         songStream.pipe(uploadStream);
 
-        uploadStream.on('error', () => {
-            // bucket.delete(id);
-            songErr_id = id
-            // reject()
+        uploadStream.on('error', async () => {
+            await deleteSong({ song_id: id })
+            reject({ error: `Unable to upload song with id %{id}` })
         });
 
         uploadStream.on('finish', () => {
@@ -325,7 +340,6 @@ const addImage = async (image) => {
     return new Promise((resolve, reject) => {
 
         let img_id;
-        let imgErr_id;
 
         // Covert buffer to Readable Stream
         const imageStream = new Readable();
@@ -340,9 +354,9 @@ const addImage = async (image) => {
         let id = uploadStream.id;
         imageStream.pipe(uploadStream);
 
-        uploadStream.on('error', () => {
-            imgErr_id = id
-            // reject()
+        uploadStream.on('error', async () => {
+            await deleteImage(id)
+            reject({ error: `Unable to upload image with id %{id}` })
         });
 
         uploadStream.on('finish', () => {
@@ -430,19 +444,19 @@ const getImageId = async (image) => {
 
 }
 
-const getAllPlaylists = (playlists) => {
+const getAllPlaylists = async (playlists) => {
 
-    let allPlaylists = []
-    let image;
-
-    playlists.map((playlist) => {
+    const allPlaylists = playlists.map(async (playlist) => {
+        let image;
 
         if (playlist.image === '') {
-            image = 'http://localhost:5000/public/defaultImg.png'
-            // image = fs.writeFile(__dirname + '../public/defaultImg.png', buffer)
+            image = ''
+        }
+        else {
+            image = await readImage(playlist.image.img_id, playlist.image.format)
         }
 
-        allPlaylists.push({
+        return {
             _id: playlist._id,
             name: playlist.name,
             description: playlist.description,
@@ -450,9 +464,53 @@ const getAllPlaylists = (playlists) => {
             duration: playlist.duration,
             songs: playlist.songs,
             likes: playlist.likes,
-        })
+        }
     })
 
-    return allPlaylists
+    return await Promise.all(allPlaylists)
 
+}
+
+// function to delete playlist cover from the database
+const deleteImage = async (id) => {
+
+    return new Promise((resolve, reject) => {
+
+        let bucket = new mongodb.GridFSBucket(db, {
+            bucketName: process.env.IMG_BUCKET
+        });
+
+        bucket.delete(id)
+        resolve({ message: 'Image deleted Successfully' })
+
+    }).then((result) => {
+        console.log(result)
+        return result
+    }).catch((error) => {
+        console.log(error)
+        return error
+    })
+}
+
+// function to delete songs from the database
+const deleteSong = async (song) => {
+
+    return new Promise((resolve, reject) => {
+
+        let bucket = new mongodb.GridFSBucket(db, {
+            bucketName: process.env.AUDIO_BUCKET
+        });
+
+        const { song_id } = song
+
+        bucket.delete(mongoose.Types.ObjectId(song_id))
+        resolve({ message: 'Songs deleted Successfully' })
+
+    }).then((result) => {
+        console.log(result)
+        return result
+    }).catch((error) => {
+        console.log(error)
+        return error
+    })
 }
