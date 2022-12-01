@@ -1,4 +1,4 @@
-import './scss/welcome.scss';
+import './scss/loading.scss';
 import { motion } from "framer-motion";
 
 const Loading = () => {

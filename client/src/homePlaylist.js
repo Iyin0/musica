@@ -15,8 +15,6 @@ const HomePlaylist = () => {
     const [duration, setDuration] = useState('')
     const dispatch = useDispatch();
 
-    console.log(songs)
-
     const addSong = (index) => {
 
         if (!likedSong.includes(index)) {
