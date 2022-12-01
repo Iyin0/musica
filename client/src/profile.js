@@ -37,7 +37,6 @@ const Profile = () => {
 
             if (response.ok) {
                 dispatch(setUser(json))
-                console.log(json)
                 setFetchingUser(false)
                 setErrorUser(false)
             }
