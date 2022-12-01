@@ -26,15 +26,15 @@ const TopBar = () => {
     //     if (search === '') setSongs(library)
     // }, [search, library])
 
-    // useEffect(() => {
-    //     let updateLib = []
-    //     allPlaylists.forEach((playlist) => {
-    //         playlist.playlists.forEach((songs) => {
-    //             updateLib.push(songs)
-    //         })
-    //     })
-    //     setLibrary(updateLib)
-    // }, [allPlaylists])
+    useEffect(() => {
+        //     let updateLib = []
+        //     allPlaylists.forEach((playlist) => {
+        //         playlist.playlists.forEach((songs) => {
+        //             updateLib.push(songs)
+        //         })
+        //     })
+        //     setLibrary(updateLib)
+    }, [])
 
     return (
         <nav className='topbar'>
