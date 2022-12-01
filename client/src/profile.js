@@ -41,7 +41,9 @@ const Profile = () => {
                 setErrorUser(false)
             }
         } catch (error) {
-            setErrorUser(error.message)
+            if (error.message === "Failed to fetch") {
+                alert("No Internet Connection")
+            }
             setFetchingUser(false)
         }
     }

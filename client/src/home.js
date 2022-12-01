@@ -58,7 +58,9 @@ const Home = () => {
                 setErrorSongs(false)
             }
         } catch (error) {
-            setErrorSongs(error.message)
+            if (error.message === "Failed to fetch") {
+                alert("No Internet Connection")
+            }
             setFetchingSongs(false)
         }
     }

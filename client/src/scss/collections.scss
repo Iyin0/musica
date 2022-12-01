@@ -100,7 +100,7 @@
     &:hover {
         img {
             transform: scale(1.2);
-            transition: 0.25s ease-in-out;
+            transition: 0.5s ease-in-out;
         }
 
         button {
@@ -131,9 +131,8 @@
 
     .collection-name {
         font-weight: 400;
-        font-size: 24px;
-        // margin: 0px 0px 35px 19px;
-        bottom: 20px;
+        font-size: 20px;
+        bottom: 22px;
         left: 19px;
         position: absolute;
         z-index: 1;
@@ -146,7 +145,6 @@
     .collection-artist {
         font-weight: 400;
         font-size: 10px;
-        // margin: 0px 0px 22px 19px;
         bottom: 22px;
         left: 19px;
         position: absolute;
