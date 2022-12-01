@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 const GenrePlaylist = () => {
 
     const playlist_info = useParams();
-    const songs = useSelector((state) => state.displayHomeData.data)
+    const songs = useSelector((state) => state.displayPlaylistData.data)
     const playlist = songs[playlist_info.genre_id]
     const [likedSong, setLikedSong] = useState([])
     const [duration, setDuration] = useState('')
