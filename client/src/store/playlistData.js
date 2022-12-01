@@ -22,7 +22,7 @@ export const homeData = createSlice({
         },
 
         setUser: (state, action) => {
-            state.collectionPlaylists = action.payload
+            state.user = action.payload
         }
     }
 })
