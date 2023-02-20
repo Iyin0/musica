@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
+import { Navigate, Outlet, createBrowserRouter, RouterProvider } from 'react-router-dom'
 import BottomBar from "./bottombar";
 import Collections from './collections';
 import Home from "./home";
@@ -22,62 +22,90 @@ function App() {
 
   const { user } = useAuthContext()
 
-  // For smooth transitioning between the pages
-
-  const UnauthPageTransition = () => {
-    const location = useLocation();
-
+  const LayoutUnauth = () => {
     return (
-
-      <AnimatePresence mode='wait' >
-        <Routes key={location.pathname} location={location}>
-          <Route path='/' element={!user ? <LandingPage /> : <Navigate to="/" />} />
-          <Route path='/signup' element={!user ? <Signup /> : <Navigate to="/" />} />
-          <Route path='/login' element={!user ? <Login /> : <Navigate to="/" />} />
-        </Routes>
+      <AnimatePresence mode='wait'>
+        <div className="App">
+          <Navbar />
+          {user ? <Navigate to='/home' /> : <Outlet />} {/* Protecting Routes */}
+        </div>
       </AnimatePresence>
     )
   }
 
-  const AuthPageTransition = () => {
-    const location = useLocation();
-
+  const LayoutAuth = () => {
     return (
-      <AnimatePresence mode='wait' >
-        <Routes key={location.pathname} location={location}>
-          <Route path='/' element={user ? <Home /> : <Navigate to="/login" />} />
-          <Route path='/collections' element={user ? <Collections /> : <Navigate to="/login" />} />
-          <Route path='/radio' element={user ? <Radio /> : <Navigate to="/login" />} />
-          <Route path='/videos' element={user ? <Videos /> : <Navigate to="/login" />} />
-          <Route path='/profile' element={user ? <Profile /> : <Navigate to="/login" />} />
-          <Route path='/home/playlist/:playlist_id' element={user ? <HomePlaylist /> : <Navigate to="/login" />} />
-          <Route path='/home/genre/:genre_id' element={user ? <GenrePlaylist /> : <Navigate to="/login" />} />
-          <Route path='/collections/playlist/:playlist_id' element={user ? <CollectionsPlaylist /> : <Navigate to="/login" />} />
-        </Routes>
+      <AnimatePresence mode='wait'>
+        <div className="App">
+          <SideBar />
+          <TopBar />
+          {user ? <Outlet /> : <Navigate to='/login' />}  {/* Protecting Routes */}
+          <BottomBar />
+        </div>
       </AnimatePresence>
     )
   }
 
+  const router = createBrowserRouter([
+    {
+      path: '/',
+      element: <LayoutUnauth />,
+      children: [
+        {
+          path: '/',
+          element: <LandingPage />
+        },
+        {
+          path: '/signup',
+          element: <Signup />
+        },
+        {
+          path: '/login',
+          element: <Login />
+        },
+      ]
+    },
+    {
+      path: '/',
+      element: <LayoutAuth />,
+      children: [
+        {
+          path: '/home',
+          element: <Home />
+        },
+        {
+          path: '/collections',
+          element: <Collections />
+        },
+        {
+          path: '/radio',
+          element: <Radio />
+        },
+        {
+          path: '/videos',
+          element: <Videos />
+        },
+        {
+          path: '/profile',
+          element: <Profile />
+        },
+        {
+          path: '/home/playlist/:playlist_id',
+          element: <HomePlaylist />
+        },
+        {
+          path: '/home/genre/:genre_id',
+          element: <GenrePlaylist />
+        },
+        {
+          path: '/collections/playlist/:playlist_id',
+          element: <CollectionsPlaylist />
+        },
+      ]
+    }
+  ])
 
-  return (
-    <BrowserRouter >
-      <div className="App">
-        {user ? (
-          <div>
-            <SideBar />
-            <TopBar />`
-            <AuthPageTransition />
-            <BottomBar />
-          </div>
-        ) : (
-          <div>
-            <Navbar />
-            <UnauthPageTransition />
-          </div>
-        )}
-      </div>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />
 }
 
 export default App;
