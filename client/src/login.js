@@ -9,11 +9,10 @@ const Login = () => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('')
-    const { login, isLoadinig, error } = useLogin()
+    const { login, isLoading, error } = useLogin()
 
     const handleClick = async (e) => {
         e.preventDefault()
-
         await login(email, password)
     }
 
@@ -30,7 +29,7 @@ const Login = () => {
                         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} /><br />
                         <p>Don't have an account? <Link to='/signup'>Sign up</Link></p>
                         <div>
-                            <button disabled={isLoadinig}>Login</button>
+                            <button disabled={isLoading}>Login</button>
                         </div>
                         {error && <div className="error">{error}</div>}
                     </form>
